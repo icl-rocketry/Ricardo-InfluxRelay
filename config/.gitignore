@@ -1,0 +1,4 @@
+# Ignore all files except .gitignore and example configuration
+*
+!.gitignore
+!config.yml.example
