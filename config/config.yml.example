@@ -1,5 +1,5 @@
 socket:
-  url: "ws://localhost:1337"
+  url: ws://localhost:1337
 
 handlers:
   - type: print
