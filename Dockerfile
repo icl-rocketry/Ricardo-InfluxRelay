@@ -2,7 +2,7 @@
 FROM python:3.10-slim
 
 # Update/upgrade packages
-RUN apt-get update && apt-get upgrade
+RUN apt-get update -y && apt-get upgrade -y
 
 # Create directory
 RUN mkdir /ricardo-influxrelay
