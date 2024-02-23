@@ -1,3 +1,4 @@
 influxdb-client
 python-socketio[asyncio_client]
 PyYAML
+flatten_json

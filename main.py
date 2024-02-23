@@ -10,6 +10,7 @@ from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import ASYNCHRONOUS
 from socketio import AsyncClient
 import yaml
+import flatten_json
 
 
 class Handler:
@@ -65,7 +66,7 @@ class InfluxDBHandler(Handler):
         bucket: str,
         tags: Dict[str, str],
         *args,
-        **kwargs
+        **kwargs,
     ):
         # Initialise parent
         super().__init__(namespace, *args, **kwargs)
@@ -90,13 +91,18 @@ class InfluxDBHandler(Handler):
         # Convert data string to dictionary
         data_ = json.loads(data)
 
+        # Flatten data dictionary
+        data_flat = flatten_json.flatten(data)
+
+        # TODO: check types?
+
         # Create InfluxDB point
         point = Point.from_dict(
             {
                 "time": time,
                 "measurement": sid,
                 "tags": self.tags,
-                "fields": data_,
+                "fields": data_flat,
             }
         )
 
