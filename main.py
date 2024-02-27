@@ -92,7 +92,7 @@ class InfluxDBHandler(Handler):
         data_ = json.loads(data)
 
         # Flatten data dictionary
-        data_flat = flatten_json.flatten(data)
+        data_flat = flatten_json.flatten(data_)
 
         # TODO: check types?
 
