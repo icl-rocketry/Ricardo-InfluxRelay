@@ -3,6 +3,8 @@ import argparse
 import asyncio
 import datetime
 import json
+import signal
+import sys
 from typing import List, Dict
 
 # Third-party imports
@@ -189,7 +191,16 @@ async def main(args):
         await relay.client.sleep(1)
 
 
+def exitHandler(*args, **kwargs):
+    # Exit process
+    sys.exit()
+
+
 if __name__ == "__main__":
+    # Set signal handlers
+    signal.signal(signal.SIGINT, exitHandler)
+    signal.signal(signal.SIGTERM, exitHandler)
+
     # Create argument parser
     parser = argparse.ArgumentParser(prog="Ricardo-InfluxRelay")
     parser.add_argument("--config", type=str, required=True, help="Configuration filepath")
