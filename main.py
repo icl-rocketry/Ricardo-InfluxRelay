@@ -1,149 +1,15 @@
 # Standard imports
 import argparse
 import asyncio
-import datetime
-import json
 import signal
 import sys
-from typing import List, Dict
 
 # Third-party imports
-from influxdb_client import InfluxDBClient, Point
-from influxdb_client.client.write_api import ASYNCHRONOUS
-from socketio import AsyncClient
 import yaml
-import flatten_json
 
-
-class Handler:
-    def __init__(self, namespace: str, *args, **kwargs) -> None:
-        # Store namespace
-        self.namespace = namespace
-
-    async def on_event(self, sid: str, data: str) -> None:
-        # Throw error if not implemented
-        raise NotImplementedError
-
-
-class MixedHandler(Handler):
-    def __init__(self, handlers: List[Handler], *args, **kwargs) -> None:
-        # Extract namespaces
-        namespaces = [handler.namespace for handler in handlers]
-
-        # Ensure single common namespace
-        if len(set(namespaces)) != 1:
-            raise ValueError("Non-singular namespaces")
-
-        # Store handlers
-        self.handlers = handlers
-
-        # Initialise parent
-        super().__init__(namespaces[0])
-
-    async def on_event(self, sid: str, data: str) -> None:
-        # Spawn handler tasks
-        tasks = [handler.on_event(sid, data) for handler in self.handlers]
-
-        # Wait for tasks to complete
-        await asyncio.gather(*tasks)
-
-
-class PrintHandler(Handler):
-    def __init__(self, namespace: str, *args, **kwargs) -> None:
-        # Initialise parent
-        super().__init__(namespace, *args, **kwargs)
-
-    async def on_event(self, sid: str, data: str) -> None:
-        # Print session ID and data
-        print(sid, data)
-
-
-class InfluxDBHandler(Handler):
-    def __init__(
-        self,
-        namespace: str,
-        url: str,
-        token: str,
-        org: str,
-        bucket: str,
-        tags: Dict[str, str],
-        *args,
-        **kwargs,
-    ):
-        # Initialise parent
-        super().__init__(namespace, *args, **kwargs)
-
-        # Declare InfluxDB client
-        self.client = InfluxDBClient(url=url, token=token, org=org)
-
-        # Set bucket name by stripping leading forward slash
-        self.bucket = bucket
-
-        # Set tags
-        self.tags = tags
-
-        # Create write API
-        self.write_api = self.client.write_api(write_options=ASYNCHRONOUS)
-
-    async def on_event(self, sid: str, data: str) -> None:
-        # Construct current time in ISO format
-        # TODO: use backend/system time?
-        time = datetime.datetime.now(datetime.timezone.utc).isoformat()
-
-        # Convert data string to dictionary
-        data_ = json.loads(data)
-
-        # Flatten data dictionary
-        data_flat = flatten_json.flatten(data_)
-
-        # TODO: check types?
-
-        # Create InfluxDB point
-        point = Point.from_dict(
-            {
-                "time": time,
-                "measurement": sid,
-                "tags": self.tags,
-                "fields": data_flat,
-            }
-        )
-
-        # Write point
-        self.write_api.write(bucket=self.bucket, record=point)
-
-
-# Handler mapping
-handlerMapping = {"print": PrintHandler, "influxdb": InfluxDBHandler}
-
-
-class SocketRelay:
-    def __init__(self, handlers: List[Handler]):
-        # Declare socketio client
-        self.client = AsyncClient()
-
-        # Extract namespaces
-        namespaces = [handler.namespace for handler in handlers]
-
-        # Check for repeated namespaces
-        if len(set(namespaces)) != len(namespaces):
-            raise ValueError("Repeated namespaces in handlers")
-
-        # Iterate through handlers
-        for handler in handlers:
-            # Register handler
-            self.client.on(
-                event="*",
-                namespace=handler.namespace,
-                handler=handler.on_event,
-            )
-
-    async def connect(self, url: str) -> None:
-        # Connect client
-        await self.client.connect(url)
-
-    async def disconnect(self) -> None:
-        # Disconnect client
-        await self.client.disconnect()
+# Internal imports
+from ricardoinfluxrelay.handlers import MixedHandler, get_handler
+from ricardoinfluxrelay.socketrelay import SocketRelay
 
 
 async def main(args):
@@ -158,7 +24,7 @@ async def main(args):
     # Extract handlers from configuration
     configHandlers = config["handlers"]
 
-    # Declare list of handlers
+    # Declare dictionary of handlers
     handlers = {}
 
     # Iterate through handlers
@@ -168,7 +34,7 @@ async def main(args):
         namespace = handler["namespace"]
 
         # Extract class from handler mapping
-        handlerType = handlerMapping[type]
+        handlerType = get_handler(type)
 
         # Create list if namespace not seen previously
         if namespace not in handlers:
