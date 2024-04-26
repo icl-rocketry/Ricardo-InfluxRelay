@@ -11,7 +11,7 @@ from ricardoinfluxrelay.handlers import Handler
 class SocketRelay:
     def __init__(self, url: str, tags: Dict[str, str] = {}) -> None:
         # Declare socketio client
-        self.client = AsyncClient()
+        self.client = AsyncClient(handle_sigint=False)
 
         # Store URL and tags
         self.url = url
@@ -38,8 +38,12 @@ class SocketRelay:
 
     async def connect(self) -> None:
         # Connect client
-        await self.client.connect(self.url)
+        await self.client.connect(self.url, retry=True)
 
     async def disconnect(self) -> None:
         # Disconnect client
         await self.client.disconnect()
+
+    async def wait(self) -> None:
+        # Wait for connection to end
+        await self.client.wait()
