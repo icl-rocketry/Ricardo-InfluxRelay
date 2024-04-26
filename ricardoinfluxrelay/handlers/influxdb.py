@@ -15,11 +15,11 @@ class InfluxDBHandler(Handler):
     def __init__(
         self,
         namespace: str,
+        tags: Dict[str, str],
         url: str,
         token: str,
         org: str,
         bucket: str,
-        tags: Dict[str, str],
         *args,
         **kwargs,
     ):
