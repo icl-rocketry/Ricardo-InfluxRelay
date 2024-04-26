@@ -1,21 +1,26 @@
 # Standard imports
-from typing import Type
+from typing import Dict, Type
 
 # Internal imports
-from .handler import Handler
+from .handler import Handler, TaggedHandler
 from .influxdb import InfluxDBHandler
 from .mixed import MixedHandler
 from .print import PrintHandler
-from .types import HANDLER_MAP, HANDLER_TYPES
+
+# Declare Handler mapping
+HANDLER_MAP: Dict[str, Type[Handler]] = {
+    "influxdb": InfluxDBHandler,
+    "print": PrintHandler,
+}
 
 
-def get_handler(name: str) -> Type[HANDLER_TYPES]:
-    # Get corresponding handler
-    handler = HANDLER_MAP.get(name, None)
+def get_handler_type(name: str) -> Type[Handler]:
+    # Get corresponding handler type
+    handlerType = HANDLER_MAP.get(name, None)
 
-    # Raise error for unknown handler
-    if handler is None:
-        raise ValueError(f"Unknown handler: {handler}")
+    # Raise error for unknown handler type
+    if handlerType is None:
+        raise ValueError(f"Unknown handler type: {handlerType}")
 
     # Return handler
-    return handler
+    return handlerType

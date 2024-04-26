@@ -3,12 +3,13 @@ import argparse
 import asyncio
 import signal
 import sys
+from typing import Dict, List
 
 # Third-party imports
 import yaml
 
 # Internal imports
-from ricardoinfluxrelay.handlers import MixedHandler, get_handler
+from ricardoinfluxrelay.handlers import Handler, MixedHandler, get_handler_type
 from ricardoinfluxrelay.socketrelay import SocketRelay
 
 
@@ -25,7 +26,7 @@ async def main(args):
     configHandlers = config["handlers"]
 
     # Declare dictionary of handlers
-    handlers = {}
+    handlers: Dict[str, List[Handler]] = {}
 
     # Iterate through handlers
     for handler in configHandlers:
@@ -34,7 +35,7 @@ async def main(args):
         namespace = handler["namespace"]
 
         # Extract class from handler mapping
-        handlerType = get_handler(type)
+        handlerType = get_handler_type(type)
 
         # Create list if namespace not seen previously
         if namespace not in handlers:

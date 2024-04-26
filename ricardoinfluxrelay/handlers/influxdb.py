@@ -1,5 +1,4 @@
 # Standard imports
-from datetime import datetime, timezone
 import json
 from typing import Dict
 
@@ -9,10 +8,10 @@ from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import ASYNCHRONOUS
 
 # Internal imports
-from .handler import Handler
+from .handler import TaggedHandler
 
 
-class InfluxDBHandler(Handler):
+class InfluxDBHandler(TaggedHandler):
     def __init__(
         self,
         namespace: str,
@@ -25,16 +24,13 @@ class InfluxDBHandler(Handler):
         **kwargs,
     ):
         # Initialise parent
-        super().__init__(namespace, *args, **kwargs)
+        super().__init__(namespace, tags, *args, **kwargs)
 
         # Declare InfluxDB client
         self.client = InfluxDBClient(url=url, token=token, org=org)
 
         # Set bucket name
         self.bucket = bucket
-
-        # Set tags
-        self.tags = tags
 
         # Create write API
         self.write_api = self.client.write_api(write_options=ASYNCHRONOUS)
@@ -47,7 +43,7 @@ class InfluxDBHandler(Handler):
         timestamp = int(packet["timestamp"] * 1e6)
 
         # Flatten data dictionary
-        data_flat = flatten_json.flatten(packet["data"])
+        data_flat = flatten_json.flatten(packet["data"], separator=".")
 
         # TODO: check types?
 
@@ -63,5 +59,7 @@ class InfluxDBHandler(Handler):
 
         # Write point
         self.write_api.write(
-            bucket=self.bucket, record=point, write_precision=WritePrecision.NS
+            bucket=self.bucket,
+            record=point,
+            write_precision=WritePrecision.NS,
         )
