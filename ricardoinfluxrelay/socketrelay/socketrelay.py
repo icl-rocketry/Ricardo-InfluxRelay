@@ -5,11 +5,11 @@ from typing import Sequence
 from socketio import AsyncClient
 
 # Internal imports
-from ricardoinfluxrelay.handlers import HANDLER_TYPES
+from ricardoinfluxrelay.handlers import Handler
 
 
 class SocketRelay:
-    def __init__(self, handlers: Sequence[HANDLER_TYPES]):
+    def __init__(self, handlers: Sequence[Handler]):
         # Declare socketio client
         self.client = AsyncClient()
 

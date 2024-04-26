@@ -9,7 +9,3 @@ from .print import PrintHandler
 
 # Declare Handler mapping
 HANDLER_MAP = {"print": PrintHandler, "influxdb": InfluxDBHandler}
-
-# Declare handler types
-# TODO: find cleaner solution
-HANDLER_TYPES = Union[Handler, InfluxDBHandler, MixedHandler, PrintHandler]

@@ -1,13 +1,13 @@
 # Standard imports
 import asyncio
-from typing import List
+from typing import Sequence
 
 # Internal imports
 from .handler import Handler
 
 
 class MixedHandler(Handler):
-    def __init__(self, handlers: List[Handler], *args, **kwargs) -> None:
+    def __init__(self, handlers: Sequence[Handler], *args, **kwargs) -> None:
         # Extract namespaces
         namespaces = [handler.namespace for handler in handlers]
 
