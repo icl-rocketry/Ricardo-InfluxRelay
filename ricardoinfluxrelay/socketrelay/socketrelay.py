@@ -1,5 +1,5 @@
 # Standard imports
-from typing import Sequence
+from typing import Dict, Sequence
 
 # Third-party imports
 from socketio import AsyncClient
@@ -9,12 +9,16 @@ from ricardoinfluxrelay.handlers import Handler
 
 
 class SocketRelay:
-    def __init__(self, url: str, handlers: Sequence[Handler]):
+    def __init__(self, url: str, tags: Dict[str, str] = {}) -> None:
         # Declare socketio client
         self.client = AsyncClient()
 
-        # Store URL
+        # Store URL and tags
         self.url = url
+        self.tags = tags
+
+    def add_handlers(self, handlers: Sequence[Handler]) -> None:
+        # TODO: deal with repeated calls to add handlers
 
         # Extract namespaces
         namespaces = [handler.namespace for handler in handlers]

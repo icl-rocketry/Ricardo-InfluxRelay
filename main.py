@@ -48,7 +48,10 @@ async def main(args):
     groupedHandlers = [MixedHandler(ihandlers) for _, ihandlers in handlers.items()]
 
     # Create socket relay
-    relay = SocketRelay(config["socket"]["url"], groupedHandlers)
+    relay = SocketRelay(config["socket"]["url"])
+
+    # Add handlers
+    relay.add_handlers(groupedHandlers)
 
     # Connect socket relay
     await relay.connect()
