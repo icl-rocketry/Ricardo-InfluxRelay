@@ -3,62 +3,27 @@ import argparse
 import asyncio
 import signal
 import sys
-from typing import Dict, List
-
-# Third-party imports
-import yaml
 
 # Internal imports
-from ricardoinfluxrelay.handlers import Handler, MixedHandler, get_handler_type
-from ricardoinfluxrelay.socketrelay import SocketRelay
+from ricardoinfluxrelay.configuration import Configuration
 
 
 async def main(args):
-    # Load config
-    # TODO: environment variable handling (https://pypi.org/project/envyaml/)?
-    with open(args.config, "r") as fid:
-        config = yaml.load(fid, Loader=yaml.CSafeLoader)
+    # Load configuration
+    configuration = Configuration.load_yaml(args.config)
 
-    # Validate config
-    # TODO: implement
+    # Build sockets
+    sockets = configuration.build_sockets()
 
-    # Extract handlers from configuration
-    configHandlers = config["handlers"]
+    # Spawn socket connection tasks
+    connections = [socket.connect() for socket in sockets]
 
-    # Declare dictionary of handlers
-    handlers: Dict[str, List[Handler]] = {}
-
-    # Iterate through handlers
-    for handler in configHandlers:
-        # Extract handler type and namespace
-        type = handler["type"]
-        namespace = handler["namespace"]
-
-        # Extract class from handler mapping
-        handlerType = get_handler_type(type)
-
-        # Create list if namespace not seen previously
-        if namespace not in handlers:
-            handlers[namespace] = []
-
-        # Append handler object
-        handlers[namespace].append(handlerType(**handler))
-
-    # Group handlers
-    groupedHandlers = [MixedHandler(ihandlers) for _, ihandlers in handlers.items()]
-
-    # Create socket relay
-    relay = SocketRelay(config["socket"]["url"])
-
-    # Add handlers
-    relay.add_handlers(groupedHandlers)
-
-    # Connect socket relay
-    await relay.connect()
+    # Await socket connections
+    await asyncio.gather(*connections)
 
     # Keep relay alive
     while True:
-        await relay.client.sleep(1)
+        await sockets[0].client.sleep(1)
 
 
 def exitHandler(*args, **kwargs):

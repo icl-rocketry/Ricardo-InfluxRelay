@@ -8,10 +8,10 @@ from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import ASYNCHRONOUS
 
 # Internal imports
-from .handler import TaggedHandler
+from .handler import Handler
 
 
-class InfluxDBHandler(TaggedHandler):
+class InfluxDBHandler(Handler):
     def __init__(
         self,
         namespace: str,

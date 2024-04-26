@@ -1,6 +1,6 @@
 # Standard imports
 import asyncio
-from typing import Sequence
+from typing import Dict, Sequence
 
 # Internal imports
 from .handler import Handler
@@ -22,7 +22,11 @@ class MixedHandler(Handler):
         self.handlers = handlers
 
         # Initialise parent
-        super().__init__(namespace)
+        super().__init__(namespace, *args, **kwargs)
+
+    def update_tags(self, tags: Dict[str, str]) -> None:
+        # Update tags
+        [handler.update_tags(tags) for handler in self.handlers]
 
     async def on_event(self, sid: str, data: str) -> None:
         # Spawn handler tasks

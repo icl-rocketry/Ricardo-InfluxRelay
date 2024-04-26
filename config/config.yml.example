@@ -1,5 +1,7 @@
-socket:
-  url: ws://localhost:1337
+sockets:
+  - url: ws://localhost:1337
+    tags:
+      source: local
 
 handlers:
   - type: print
@@ -8,7 +10,7 @@ handlers:
   - type: influxdb
     namespace: /telemetry
     url: http://localhost:8086
-    token: fZDWkTVbzxVQGY9-Pm9Pc-gPr6mPO7H7pG7FLFVPyG_GkkqwKTINfyFhLv20gxB3-uYR4ED-3sBUkxxmDe7acQ==
+    token: ""
     org: ICLR
     bucket: telemetry
     tags:
