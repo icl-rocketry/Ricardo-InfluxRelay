@@ -5,7 +5,7 @@ from typing import Dict
 # Third-party imports
 import flatten_json
 from influxdb_client import InfluxDBClient, Point, WritePrecision
-from influxdb_client.client.write_api import ASYNCHRONOUS
+from influxdb_client.client.write_api import SYNCHRONOUS
 
 # Internal imports
 from .handler import Handler
@@ -33,7 +33,7 @@ class InfluxDBHandler(Handler):
         self.bucket = bucket
 
         # Create write API
-        self.write_api = self.client.write_api(write_options=ASYNCHRONOUS)
+        self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
 
     async def on_event(self, sid: str, data: str) -> None:
         # Convert data string to dictionary
