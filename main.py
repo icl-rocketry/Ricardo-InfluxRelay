@@ -2,17 +2,14 @@
 import argparse
 import asyncio
 import signal
+from typing import List
 
 # Internal imports
 from ricardoinfluxrelay.configuration import Configuration
+from ricardoinfluxrelay.socketrelay import SocketRelay
 
 
-async def main(args):
-    # Load configuration
-    configuration = Configuration.load_yaml(args.config)
-
-    # Build sockets
-    sockets = configuration.build_sockets()
+async def main(sockets: List[SocketRelay]) -> None:
 
     try:
         # Spawn socket connection tasks
@@ -55,8 +52,19 @@ async def exit(signal: signal.Signals, loop: asyncio.AbstractEventLoop) -> None:
 if __name__ == "__main__":
     # Create argument parser
     parser = argparse.ArgumentParser(prog="Ricardo-InfluxRelay")
-    parser.add_argument("--config", type=str, required=True, help="Configuration filepath")
+    parser.add_argument(
+        "--config",
+        type=str,
+        required=True,
+        help="Configuration filepath",
+    )
     args = parser.parse_args()
+
+    # Load configuration
+    configuration = Configuration.load_yaml(args.config)
+
+    # Build sockets
+    sockets = configuration.build_sockets()
 
     # Get main event loop
     loop = asyncio.get_event_loop()
@@ -69,7 +77,7 @@ if __name__ == "__main__":
         )
 
     # Create main task
-    mainTask = loop.create_task(main(args))
+    mainTask = loop.create_task(main(sockets))
 
     try:
         # Execute task loop
