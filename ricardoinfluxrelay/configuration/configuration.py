@@ -16,6 +16,9 @@ from ricardoinfluxrelay.socketrelay import SocketRelay
 class Configuration:
 
     def __init__(self, configuration) -> None:
+        # Validate configuration
+        # TODO: implement
+
         # Split configuration
         handlersConfiguration = configuration["handlers"]
         socketsConfiguration = configuration["sockets"]
@@ -75,20 +78,29 @@ class Configuration:
 
     @staticmethod
     def generate_handler(configuration) -> Handler:
+        # Make a copy of the configuration
+        configurationCopy = deepcopy(configuration)
+
         # Extract handler type
-        handlerType = configuration["type"]
+        handlerType = configurationCopy["type"]
 
         # Extract handler class
         handlerClass = get_handler_type(handlerType)
 
+        # Drop type
+        del configurationCopy["type"]
+
         # Return handler
-        return handlerClass(**configuration)
+        return handlerClass(**configurationCopy)
 
     @staticmethod
     def generate_socket(configuration) -> SocketRelay:
+        # Make a copy of the configuration
+        configurationCopy = deepcopy(configuration)
+
         # Extract URL and tags
-        url = configuration["url"]
-        tags = configuration["tags"]
+        url = configurationCopy["url"]
+        tags = configurationCopy["tags"]
 
         # Return socket relay
         return SocketRelay(url, tags)
@@ -98,9 +110,6 @@ class Configuration:
         # Load configuration YAML
         with open(path, "r") as fid:
             configuration = yaml.load(fid, Loader=yaml.CSafeLoader)
-
-        # Validate configuration
-        # TODO: implement
 
         # Return configuration
         return Configuration(configuration)
