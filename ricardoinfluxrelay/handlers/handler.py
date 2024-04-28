@@ -8,8 +8,6 @@ class Handler(ABC):
         self,
         namespace: str,
         tags: Dict[str, str] = {},
-        *args,
-        **kwargs,
     ) -> None:
         # Store namespace
         self.namespace = namespace

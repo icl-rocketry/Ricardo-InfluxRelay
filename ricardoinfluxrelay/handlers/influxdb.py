@@ -15,16 +15,14 @@ class InfluxDBHandler(Handler):
     def __init__(
         self,
         namespace: str,
-        tags: Dict[str, str],
         url: str,
-        token: str,
         org: str,
         bucket: str,
-        *args,
-        **kwargs,
+        tags: Dict[str, str] = {},
+        token: str = "",
     ):
         # Initialise parent
-        super().__init__(namespace, tags, *args, **kwargs)
+        super().__init__(namespace, tags)
 
         # Declare InfluxDB client
         self.client = InfluxDBClient(url=url, token=token, org=org)

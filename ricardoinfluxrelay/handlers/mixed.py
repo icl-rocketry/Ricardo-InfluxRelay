@@ -7,7 +7,7 @@ from .handler import Handler
 
 
 class MixedHandler(Handler):
-    def __init__(self, handlers: Sequence[Handler], *args, **kwargs) -> None:
+    def __init__(self, handlers: Sequence[Handler]) -> None:
         # Extract namespaces
         namespaces = [handler.namespace for handler in handlers]
 
@@ -22,7 +22,7 @@ class MixedHandler(Handler):
         self.handlers = handlers
 
         # Initialise parent
-        super().__init__(namespace, *args, **kwargs)
+        super().__init__(namespace)
 
     def update_tags(self, tags: Dict[str, str]) -> None:
         # Update tags
