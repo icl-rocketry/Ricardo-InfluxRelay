@@ -16,8 +16,8 @@ class InfluxDBHandler(Handler):
         self,
         namespace: str,
         url: str,
-        org: str,
-        bucket: str,
+        org: str = "",
+        bucket: str = "",
         tags: Dict[str, str] = {},
         token: str = "",
     ):
