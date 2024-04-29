@@ -1,5 +1,6 @@
 sockets:
-  - url: ws://localhost:1337
+  - url: ws://localhost:1337/
+    ssl_verify: False
     tags:
       source: local
 

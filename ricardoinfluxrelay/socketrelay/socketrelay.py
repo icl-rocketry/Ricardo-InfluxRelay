@@ -9,9 +9,14 @@ from ricardoinfluxrelay.handlers import Handler
 
 
 class SocketRelay:
-    def __init__(self, url: str, tags: Dict[str, str] = {}) -> None:
+    def __init__(
+        self,
+        url: str,
+        tags: Dict[str, str] = {},
+        ssl_verify: bool = True,
+    ) -> None:
         # Declare socketio client
-        self.client = AsyncClient(handle_sigint=False)
+        self.client = AsyncClient(handle_sigint=False, ssl_verify=ssl_verify)
 
         # Store URL and tags
         self.url = url
