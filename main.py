@@ -2,6 +2,7 @@
 import argparse
 import asyncio
 import signal
+import sys
 from typing import List
 
 # Internal imports
@@ -25,9 +26,6 @@ async def main(sockets: List[SocketRelay]) -> None:
         await asyncio.gather(*connected)
 
     finally:
-        # TODO: find fix for correctly stopping a socket.io client if it is disconnected and re-trying to connect
-        # NOTE: Socket.io ignores "asyncio.CancelledError" in "_handle_reconnect"
-
         # Spawn socket disconnection tasks
         disconnections = [socket.disconnect() for socket in sockets]
 
@@ -36,17 +34,23 @@ async def main(sockets: List[SocketRelay]) -> None:
 
 
 async def exit(signal: signal.Signals, loop: asyncio.AbstractEventLoop) -> None:
-    # Get tasks to cancel
-    tasks = [task for task in asyncio.all_tasks() if task is not asyncio.current_task()]
+    # Forcibly exit the process
+    # TODO: Find fix for correctly stopping Socket.IO clients which are trying to connect
+    #       as python-socketio ignores "asyncio.CancelledError" in "_handle_reconnect".
+    #       Discussed in: https://github.com/miguelgrinberg/python-socketio/issues/1333.
+    sys.exit()
 
-    # Cancel tasks
-    [task.cancel() for task in tasks]
+    # # Get tasks to cancel
+    # tasks = [task for task in asyncio.all_tasks() if task is not asyncio.current_task()]
 
-    # Wait for tasks to finish
-    await asyncio.gather(*tasks, return_exceptions=True)
+    # # Cancel tasks
+    # [task.cancel() for task in tasks]
 
-    # Stop loop
-    loop.stop()
+    # # Wait for tasks to finish
+    # await asyncio.gather(*tasks, return_exceptions=True)
+
+    # # Stop loop
+    # loop.stop()
 
 
 if __name__ == "__main__":
