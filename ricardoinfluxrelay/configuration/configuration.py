@@ -61,21 +61,8 @@ class Configuration:
 
     @staticmethod
     def generate_socket(configuration, handler_manager: HandlerManager) -> SocketRelay:
-        # Make a copy of the configuration
-        configurationCopy = deepcopy(configuration)
-
-        # Extract URL and tags
-        url: str = configurationCopy["url"]
-        tags: Dict[str, str] = configurationCopy["tags"]
-        ssl_verify: bool = configurationCopy["ssl_verify"]
-
         # Return socket relay
-        return SocketRelay(
-            url=url,
-            handler_manager=handler_manager,
-            tags=tags,
-            ssl_verify=ssl_verify,
-        )
+        return SocketRelay(**configuration, handler_manager=handler_manager)
 
     @staticmethod
     def load_yaml(path: str) -> Configuration:
