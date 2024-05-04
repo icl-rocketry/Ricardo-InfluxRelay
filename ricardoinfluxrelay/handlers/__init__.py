@@ -2,6 +2,7 @@
 from typing import Dict, Type
 
 # Internal imports
+from .file import FileHandler
 from .handler import Handler
 from .influxdb import InfluxDBHandler
 from .manager import HandlerManager
@@ -11,6 +12,7 @@ from .print import PrintHandler
 HANDLER_MAP: Dict[str, Type[Handler]] = {
     "influxdb": InfluxDBHandler,
     "print": PrintHandler,
+    "file": FileHandler,
 }
 
 
