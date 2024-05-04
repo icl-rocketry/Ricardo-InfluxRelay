@@ -4,7 +4,7 @@ from typing import Dict, Type
 # Internal imports
 from .handler import Handler
 from .influxdb import InfluxDBHandler
-from .mixed import MixedHandler
+from .manager import HandlerManager
 from .print import PrintHandler
 
 # Declare Handler mapping

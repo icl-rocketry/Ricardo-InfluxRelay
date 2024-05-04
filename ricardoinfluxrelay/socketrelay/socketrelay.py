@@ -1,17 +1,18 @@
 # Standard imports
-from typing import Dict, Sequence
+from typing import Dict
 
 # Third-party imports
 from socketio import AsyncClient
 
 # Internal imports
-from ricardoinfluxrelay.handlers import Handler
+from ricardoinfluxrelay.handlers import HandlerManager
 
 
 class SocketRelay:
     def __init__(
         self,
         url: str,
+        handler_manager: HandlerManager,
         tags: Dict[str, str] = {},
         ssl_verify: bool = True,
     ) -> None:
@@ -22,23 +23,21 @@ class SocketRelay:
         self.url = url
         self.tags = tags
 
-    def add_handlers(self, handlers: Sequence[Handler]) -> None:
-        # TODO: deal with repeated calls to add handlers
+        # Store handler manager
+        self.handler_manager = handler_manager
 
-        # Extract namespaces
-        namespaces = [handler.namespace for handler in handlers]
+        # Iterate through namespaces
+        for namespace in handler_manager.namespaces:
+            # Create handler
+            async def handler(event: str, data: str):
+                # Call event handler
+                return await self.handler_manager.on_event(namespace, event, data, tags)
 
-        # Check for repeated namespaces
-        if len(set(namespaces)) != len(namespaces):
-            raise ValueError("Repeated namespaces in handlers")
-
-        # Iterate through handlers
-        for handler in handlers:
             # Register handler
             self.client.on(
                 event="*",
-                namespace=handler.namespace,
-                handler=handler.on_event,
+                namespace=namespace,
+                handler=handler,
             )
 
     async def connect(self) -> None:

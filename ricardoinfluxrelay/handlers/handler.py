@@ -20,4 +20,9 @@ class Handler(ABC):
         self.tags.update(tags)
 
     @abstractmethod
-    async def on_event(self, sid: str, data: str) -> None: ...
+    async def on_event(
+        self,
+        event: str,
+        data: str,
+        extra_tags: Dict[str, str] = {},
+    ) -> None: ...

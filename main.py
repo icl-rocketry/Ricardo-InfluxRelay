@@ -68,7 +68,7 @@ if __name__ == "__main__":
     configuration = Configuration.load_yaml(args.config)
 
     # Build sockets
-    sockets = configuration.build_sockets()
+    sockets = configuration.get_sockets()
 
     # Get main event loop
     loop = asyncio.get_event_loop()

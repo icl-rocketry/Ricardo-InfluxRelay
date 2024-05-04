@@ -33,7 +33,15 @@ class InfluxDBHandler(Handler):
         # Create write API
         self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
 
-    async def on_event(self, sid: str, data: str) -> None:
+    async def on_event(
+        self,
+        event: str,
+        data: str,
+        extra_tags: Dict[str, str] = {},
+    ) -> None:
+        # Generate tags
+        tags = {**self.tags, **extra_tags}
+
         # Convert data string to dictionary
         packet = json.loads(data)
 
@@ -49,8 +57,8 @@ class InfluxDBHandler(Handler):
         point = Point.from_dict(
             {
                 "time": timestamp,
-                "measurement": sid,
-                "tags": self.tags,
+                "measurement": event,
+                "tags": tags,
                 "fields": data_flat,
             }
         )
