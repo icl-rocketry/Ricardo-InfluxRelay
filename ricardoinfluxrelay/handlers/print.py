@@ -9,6 +9,7 @@ class PrintHandler(Handler):
 
     async def on_event(
         self,
+        namespace: str,
         event: str,
         data: str,
         extra_tags: Dict[str, str] = {},
@@ -17,4 +18,4 @@ class PrintHandler(Handler):
         tags = {**self.tags, **extra_tags}
 
         # Print event, data, and tags
-        print({"event": event, "data": data, "tags": tags})
+        print({"namespace": namespace, "event": event, "data": data, "tags": tags})

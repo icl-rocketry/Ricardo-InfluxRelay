@@ -1,6 +1,6 @@
 # Standard imports
 import json
-from typing import Dict
+from typing import Dict, List, Union
 
 # Third-party imports
 import flatten_json
@@ -14,7 +14,7 @@ from .handler import Handler
 class InfluxDBHandler(Handler):
     def __init__(
         self,
-        namespace: str,
+        namespaces: List[str],
         url: str,
         org: str = "",
         bucket: str = "",
@@ -22,7 +22,7 @@ class InfluxDBHandler(Handler):
         token: str = "",
     ):
         # Initialise parent
-        super().__init__(namespace, tags)
+        super().__init__(namespaces, tags)
 
         # Declare InfluxDB client
         self.client = InfluxDBClient(url=url, token=token, org=org)
@@ -35,6 +35,7 @@ class InfluxDBHandler(Handler):
 
     async def on_event(
         self,
+        namespace: str,
         event: str,
         data: str,
         extra_tags: Dict[str, str] = {},

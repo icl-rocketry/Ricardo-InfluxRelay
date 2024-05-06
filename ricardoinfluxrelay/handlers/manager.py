@@ -21,9 +21,9 @@ class HandlerManager:
     ):
         # Generate handler tasks
         tasks = [
-            handler.on_event(event, data, extra_tags)
+            handler.on_event(namespace, event, data, extra_tags)
             for handler in self.handlers
-            if handler.namespace == namespace
+            if namespace in handler.namespaces
         ]
 
         # Execute handler tasks
@@ -36,9 +36,17 @@ class HandlerManager:
 
     @handlers.setter
     def handlers(self, value: Sequence[Handler]):
-        # Update handlers and namespaces
+        # Update handlers
         self._handlers = value
-        self.namespaces = set([handler.namespace for handler in self.handlers])
+
+        # Update unique set of namespaces
+        self.namespaces = set(
+            [
+                namespace
+                for handler in self.handlers  # iterate through handlers
+                for namespace in handler.namespaces  # iterate through handler namespaces
+            ]
+        )
 
     @property
     def namespaces(self) -> Set[str]:

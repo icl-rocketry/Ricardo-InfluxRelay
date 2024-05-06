@@ -9,7 +9,8 @@ handlers:
     namespace: /telemetry
 
   - type: influxdb
-    namespace: /telemetry
+    namespaces:
+      - /telemetry
     url: http://localhost:8086
     token: ""
     org: ICLR

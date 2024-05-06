@@ -1,7 +1,7 @@
 # Standard imports
 import json
 import os
-from typing import Dict
+from typing import Dict, List
 
 # Third-party imports
 import flatten_json
@@ -13,9 +13,9 @@ from .handler import Handler
 
 class FileHandler(Handler):
 
-    def __init__(self, namespace: str, filepath: str, tags: Dict[str, str] = {}):
+    def __init__(self, namespaces: List[str], filepath: str, tags: Dict[str, str] = {}):
         # Initialise parent
-        super().__init__(namespace, tags)
+        super().__init__(namespaces, tags)
 
         # Ensure directory exists
         os.makedirs(
@@ -32,6 +32,7 @@ class FileHandler(Handler):
 
     async def on_event(
         self,
+        namespace: str,
         event: str,
         data: str,
         extra_tags: Dict[str, str] = {},

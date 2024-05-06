@@ -23,26 +23,25 @@ class SocketRelay:
         self.url = url
         self.tags = tags
 
-        # Store handler manager
+        # Store handler manager and extract namespaces
         self.handler_manager = handler_manager
+        self.namespaces = list(handler_manager.namespaces)
 
-        # Iterate through namespaces
-        for namespace in handler_manager.namespaces:
-            # Create handler
-            async def handler(event: str, data: str):
-                # Call event handler
-                return await self.handler_manager.on_event(namespace, event, data, tags)
+        # Create handler
+        async def handler(event: str, namespace: str, data: str):
+            # Call event handler
+            await self.handler_manager.on_event(namespace, event, data, tags)
 
-            # Register handler
-            self.client.on(
-                event="*",
-                namespace=namespace,
-                handler=handler,
-            )
+        # Register handler
+        self.client.on(
+            event="*",
+            namespace="*",
+            handler=handler,
+        )
 
     async def connect(self) -> None:
         # Connect client
-        await self.client.connect(self.url, retry=True)
+        await self.client.connect(self.url, namespaces=self.namespaces, retry=True)
 
     async def disconnect(self) -> None:
         # Disconnect client
