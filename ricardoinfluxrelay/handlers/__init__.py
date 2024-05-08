@@ -7,12 +7,14 @@ from .handler import Handler
 from .influxdb import InfluxDBHandler
 from .manager import HandlerManager
 from .print import PrintHandler
+from .websocket import WebSocketHandler
 
 # Declare Handler mapping
 HANDLER_MAP: Dict[str, Type[Handler]] = {
     "influxdb": InfluxDBHandler,
     "print": PrintHandler,
     "file": FileHandler,
+    "websocket": WebSocketHandler,
 }
 
 

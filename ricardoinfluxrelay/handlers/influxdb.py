@@ -1,6 +1,6 @@
 # Standard imports
 import json
-from typing import Dict, List, Union
+from typing import Dict, List
 
 # Third-party imports
 import flatten_json
