@@ -16,10 +16,27 @@ class Handler(ABC):
         self.tags.update(tags)
 
     @abstractmethod
+    async def _on_event(
+        self,
+        namespace: str,
+        event: str,
+        data: str,
+        tags: Dict[str, str],
+    ) -> None: ...
+
     async def on_event(
         self,
         namespace: str,
         event: str,
         data: str,
-        extra_tags: Dict[str, str] = {},
-    ) -> None: ...
+        extra_tags: Dict[str, str],
+    ) -> None:
+        # Return if event namespace not in handler namespaces
+        if namespace not in self.namespaces:
+            return
+
+        # Generate tags
+        tags = {**self.tags, **extra_tags}
+
+        # Execute event method
+        await self._on_event(namespace, event, data, tags)

@@ -23,7 +23,6 @@ class HandlerManager:
         tasks = [
             handler.on_event(namespace, event, data, extra_tags)
             for handler in self.handlers
-            if namespace in handler.namespaces
         ]
 
         # Execute handler tasks

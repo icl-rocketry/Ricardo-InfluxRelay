@@ -30,16 +30,13 @@ class FileHandler(Handler):
         # Close file
         self.fid.close()
 
-    async def on_event(
+    async def _on_event(
         self,
         namespace: str,
         event: str,
         data: str,
-        extra_tags: Dict[str, str] = {},
+        tags: Dict[str, str],
     ) -> None:
-        # Generate tags
-        tags = {**self.tags, **extra_tags}
-
         # Convert data string to dictionary
         packet = json.loads(data)
 

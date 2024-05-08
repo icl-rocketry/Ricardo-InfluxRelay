@@ -53,16 +53,13 @@ class WebSocketHandler(Handler):
             # Remove from client list
             self.clients.remove(client)
 
-    async def on_event(
+    async def _on_event(
         self,
         namespace: str,
         event: str,
         data: str,
-        extra_tags: Dict[str, str] = {},
+        tags: Dict[str, str],
     ):
-        # Generate tags
-        tags = {**self.tags, **extra_tags}
-
         # Convert data string to dictionary
         packet = json.loads(data)
 
