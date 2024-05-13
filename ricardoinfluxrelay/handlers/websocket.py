@@ -40,6 +40,9 @@ class WebSocketHandler(Handler):
         websocket: websockets.WebSocketServerProtocol,
         path: str,
     ):
+        # Declare client (to prevent unbound behaviour)
+        client = None
+
         try:
             # Create client object
             client = WebSocketHanderClient(websocket, path)
@@ -51,7 +54,8 @@ class WebSocketHandler(Handler):
             await websocket.wait_closed()
         finally:
             # Remove from client list
-            self.clients.remove(client)
+            if client is not None:
+                self.clients.remove(client)
 
     async def _on_event(
         self,
@@ -93,7 +97,6 @@ class WebSocketHanderClient:
         self.path = path
 
         # Split namespace and event from path
-        # TODO: compatibility layer with existing backend
         # TODO: requires better implementation
         split_path = path.split("/", 2)
 
@@ -107,6 +110,11 @@ class WebSocketHanderClient:
         # Store namespace and event
         self.namespace = "/" + split_path[1]
         self.event = split_path[2]
+
+        # Fix for backwards compatibility
+        # TODO: deprecate this eventually
+        if self.namespace == "/ws":
+            self.namespace = "/telemetry"
 
     async def on_event(self, message: str):
         # Send message
