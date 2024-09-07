@@ -40,3 +40,6 @@ class Handler(ABC):
 
         # Execute event method
         await self._on_event(namespace, event, data, tags)
+
+    # Delimiter when flattening data
+    FLATTEN_DELIMITER = "__"

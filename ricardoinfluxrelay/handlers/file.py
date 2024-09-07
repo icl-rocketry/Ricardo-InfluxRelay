@@ -50,7 +50,10 @@ class FileHandler(Handler):
         timestamp = int(packet["timestamp"] * 1e6)
 
         # Flatten data dictionary
-        data_flat = flatten_json.flatten(packet["data"], separator=".")
+        data_flat = flatten_json.flatten(
+            packet["data"],
+            separator=self.FLATTEN_DELIMITER,
+        )
 
         # TODO: check types?
         # TODO: unify point generation with InfluxHandler?
