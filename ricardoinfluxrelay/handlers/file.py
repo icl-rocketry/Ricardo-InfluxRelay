@@ -14,6 +14,12 @@ from .handler import Handler
 class FileHandler(Handler):
 
     def __init__(self, namespaces: List[str], filepath: str, tags: Dict[str, str] = {}):
+        # Ensure only a single namespace is provided
+        if len(namespaces) != 1:
+            raise ValueError(
+                f"FileHandler only supports a single namespace ({len(namespaces)} requested)"
+            )
+
         # Initialise parent
         super().__init__(namespaces, tags)
 
