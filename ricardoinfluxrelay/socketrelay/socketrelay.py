@@ -43,9 +43,17 @@ class SocketRelay:
         # Connect client
         await self.client.connect(self.url, namespaces=self.namespaces, retry=True)
 
+        # Print connection message
+        # TODO: replace with logger
+        print(f"[{id(self)}] Connected to {self.url}")
+
     async def disconnect(self) -> None:
         # Disconnect client
         await self.client.disconnect()
+
+        # Print disconnection method
+        # TODO: replace with logger
+        print(f"[{id(self)}] Disconnected from {self.url}")
 
     async def wait(self) -> None:
         # Wait for connection to end
