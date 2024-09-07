@@ -1,7 +1,7 @@
 # Standard imports
 import asyncio
 import json
-from typing import Dict, List
+from typing import Any, Dict, List
 
 # Third-party imports
 import websockets
@@ -61,17 +61,14 @@ class WebSocketHandler(Handler):
         self,
         namespace: str,
         event: str,
-        data: str,
+        data: Dict[str, Any],
         tags: Dict[str, str],
     ):
-        # Convert data string to dictionary
-        packet = json.loads(data)
-
         # Add tags to packet
-        packet["tags"] = tags
+        data["tags"] = tags
 
         # Re-serialise packet
-        message = json.dumps(packet)
+        message = json.dumps(data)
 
         # Spawn send tasks
         tasks = [
@@ -103,7 +100,7 @@ class WebSocketHanderClient:
         # Check path validity
         # TODO: requires better implementation
         if len(split_path) != 3:
-            raise ValueError
+            raise ValueError("Incorrect number of elements in path")
         if split_path[0] != "":
             raise ValueError(f"First element should be blank")
 

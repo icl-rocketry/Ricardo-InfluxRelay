@@ -1,5 +1,5 @@
 # Standard imports
-from typing import Dict
+from typing import Any, Dict
 
 # Internal imports
 from .handler import Handler
@@ -11,7 +11,7 @@ class PrintHandler(Handler):
         self,
         namespace: str,
         event: str,
-        data: str,
+        data: Dict[str, Any],
         tags: Dict[str, str],
     ) -> None:
         # Print namespace, event, data, and tags

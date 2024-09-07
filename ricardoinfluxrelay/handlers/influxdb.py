@@ -1,6 +1,5 @@
 # Standard imports
-import json
-from typing import Dict, List
+from typing import Any, Dict, List
 
 # Third-party imports
 import flatten_json
@@ -37,20 +36,14 @@ class InfluxDBHandler(Handler):
         self,
         namespace: str,
         event: str,
-        data: str,
+        data: Dict[str, Any],
         tags: Dict[str, str],
     ) -> None:
-        # Convert data string to dictionary
-        packet = json.loads(data)
-
         # Extract timestamp (in nano-seconds)
-        timestamp = int(packet["timestamp"] * 1e6)
+        timestamp = int(data["timestamp"] * 1e6)
 
         # Flatten data dictionary
-        data_flat = flatten_json.flatten(
-            packet["data"],
-            separator=self.FLATTEN_DELIMITER,
-        )
+        data_flat = flatten_json.flatten(data, separator=self.FLATTEN_DELIMITER)
 
         # TODO: check types?
 
