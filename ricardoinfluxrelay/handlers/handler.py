@@ -37,7 +37,7 @@ class Handler(ABC):
             return
 
         # Convert data to dictionary
-        # NOTE: in theory, this ensures that each handler has its own unique 
+        # NOTE: in theory, this ensures that each handler has its own unique
         #       copy of the data, meaning that it can be modified later
         data_dict: Dict[str, Any] = json.loads(data)
 
@@ -46,6 +46,3 @@ class Handler(ABC):
 
         # Execute event method
         await self._on_event(namespace, event, data_dict, tags)
-
-    # Delimiter when flattening data
-    FLATTEN_DELIMITER = "__"

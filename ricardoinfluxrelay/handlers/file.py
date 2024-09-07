@@ -1,17 +1,12 @@
 # Standard imports
-import json
 import os
 from typing import Any, Dict, List
 
-# Third-party imports
-import flatten_json
-from influxdb_client import Point
-
 # Internal imports
-from .handler import Handler
+from .sanitised import SanitisedHandler
 
 
-class FileHandler(Handler):
+class FileHandler(SanitisedHandler):
 
     def __init__(self, namespaces: List[str], filepath: str, tags: Dict[str, str] = {}):
         # Ensure only a single namespace is provided
@@ -43,24 +38,10 @@ class FileHandler(Handler):
         data: Dict[str, Any],
         tags: Dict[str, str],
     ) -> None:
-        # Extract timestamp (in nano-seconds)
-        timestamp = int(data["timestamp"] * 1e6)
-
-        # Flatten data dictionary
-        data_flat = flatten_json.flatten(data, separator=self.FLATTEN_DELIMITER)
+        # Convert data to point
+        point = self._to_point(event, data, tags)
 
         # TODO: check types?
-        # TODO: unify point generation with InfluxHandler?
-
-        # Create InfluxDB point
-        point = Point.from_dict(
-            {
-                "time": timestamp,
-                "measurement": event,
-                "tags": tags,
-                "fields": data_flat,
-            }
-        )
 
         # Write point to file
         self.fid.write(str(point) + "\n")

@@ -2,15 +2,14 @@
 from typing import Any, Dict, List
 
 # Third-party imports
-import flatten_json
-from influxdb_client import InfluxDBClient, Point, WritePrecision
+from influxdb_client import InfluxDBClient, WritePrecision
 from influxdb_client.client.write_api import SYNCHRONOUS
 
 # Internal imports
-from .handler import Handler
+from .sanitised import SanitisedHandler
 
 
-class InfluxDBHandler(Handler):
+class InfluxDBHandler(SanitisedHandler):
     def __init__(
         self,
         namespaces: List[str],
@@ -39,23 +38,10 @@ class InfluxDBHandler(Handler):
         data: Dict[str, Any],
         tags: Dict[str, str],
     ) -> None:
-        # Extract timestamp (in nano-seconds)
-        timestamp = int(data["timestamp"] * 1e6)
-
-        # Flatten data dictionary
-        data_flat = flatten_json.flatten(data, separator=self.FLATTEN_DELIMITER)
+        # Convert data to point
+        point = self._to_point(event, data, tags)
 
         # TODO: check types?
-
-        # Create InfluxDB point
-        point = Point.from_dict(
-            {
-                "time": timestamp,
-                "measurement": event,
-                "tags": tags,
-                "fields": data_flat,
-            }
-        )
 
         # Write point
         self.write_api.write(
