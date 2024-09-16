@@ -30,7 +30,7 @@ class SocketRelay:
 
         # Register (dis)connection messages
         self.client.on(event="connect", namespace="*", handler=self._connected)
-        self.client.on(event="disconnect", namespace="*",  handler=self._disconnected)
+        self.client.on(event="disconnect", namespace="*", handler=self._disconnected)
 
         # Create handler
         async def handler(event: str, namespace: str, data: str):
@@ -51,10 +51,6 @@ class SocketRelay:
         # Connect client
         await self.client.connect(self.url, namespaces=self.namespaces, retry=True)
 
-    def _connected(self, namespace) -> None:
-        # Log connection
-        logging.info(f"Connected to {namespace} at {self.url}")
-
     async def disconnect(self) -> None:
         # Log disconnection attempt
         if self.client.connected:
@@ -65,7 +61,11 @@ class SocketRelay:
         # Disconnect client
         await self.client.shutdown()
 
-    def _disconnected(self, namespace) -> None:
+    def _connected(self, namespace: str) -> None:
+        # Log connection
+        logging.info(f"Connected to {namespace} at {self.url}")
+
+    def _disconnected(self, namespace: str) -> None:
         # Log disconnection
         logging.info(f"Disconnected from {namespace} at {self.url}")
 

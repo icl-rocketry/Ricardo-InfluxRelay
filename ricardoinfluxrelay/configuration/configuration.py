@@ -3,7 +3,7 @@ from __future__ import annotations
 
 # Standard imports
 from copy import deepcopy
-from typing import Dict, List
+from typing import Any, Dict, List
 
 # Third-party imports
 import yaml
@@ -15,7 +15,7 @@ from ricardoinfluxrelay.socketrelay import SocketRelay
 
 class Configuration:
 
-    def __init__(self, configuration) -> None:
+    def __init__(self, configuration: Dict[str, Any]) -> None:
         # Validate configuration
         # TODO: implement
 
@@ -60,7 +60,7 @@ class Configuration:
         return handlerClass(**configurationCopy)
 
     @staticmethod
-    def generate_socket(configuration, handler_manager: HandlerManager) -> SocketRelay:
+    def generate_socket(configuration: Dict[str, Any], handler_manager: HandlerManager) -> SocketRelay:
         # Return socket relay
         return SocketRelay(**configuration, handler_manager=handler_manager)
 

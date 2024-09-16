@@ -22,6 +22,7 @@ class SanitisedHandler(Handler):
         timestamp_ns = int(timestamp * 1e6)
 
         # Flatten data dictionary
+        # TODO: extract subset?
         data_flat = flatten_json.flatten(data, separator=self.FLATTEN_DELIMITER)
 
         # Ensure timestamp column not in data
