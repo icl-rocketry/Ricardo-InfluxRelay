@@ -17,8 +17,9 @@ class SanitisedHandler(Handler):
         data: Dict[str, Any],
         tags: Dict[str, str],
     ) -> Point:
-        # Extract timestamp (in nano-seconds)
-        timestamp = int(data["timestamp"] * 1e6)
+        # Extract timestamp
+        timestamp = data["timestamp"]
+        timestamp_ns = int(timestamp * 1e6)
 
         # Flatten data dictionary
         data_flat = flatten_json.flatten(data, separator=self.FLATTEN_DELIMITER)
@@ -30,7 +31,7 @@ class SanitisedHandler(Handler):
         # Return InfluxDB point
         return Point.from_dict(
             {
-                "time": timestamp,
+                "time": timestamp_ns,
                 "measurement": event,
                 "tags": tags,
                 "fields": data_flat,

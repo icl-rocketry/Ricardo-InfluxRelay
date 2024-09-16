@@ -1,4 +1,5 @@
 # Standard imports
+import logging
 from typing import Dict
 
 # Third-party imports
@@ -27,6 +28,10 @@ class SocketRelay:
         self.handler_manager = handler_manager
         self.namespaces = list(handler_manager.namespaces)
 
+        # Register (dis)connection messages
+        self.client.on(event="connect", namespace="*", handler=self._connected)
+        self.client.on(event="disconnect", namespace="*",  handler=self._disconnected)
+
         # Create handler
         async def handler(event: str, namespace: str, data: str):
             # Call event handler
@@ -40,20 +45,29 @@ class SocketRelay:
         )
 
     async def connect(self) -> None:
+        # Log connection attempt
+        logging.info(f"Attempting connection to {self.url}")
+
         # Connect client
         await self.client.connect(self.url, namespaces=self.namespaces, retry=True)
 
-        # Print connection message
-        # TODO: replace with logger
-        print(f"[{id(self)}] Connected to {self.url}")
+    def _connected(self, namespace) -> None:
+        # Log connection
+        logging.info(f"Connected to {namespace} at {self.url}")
 
     async def disconnect(self) -> None:
-        # Disconnect client
-        await self.client.disconnect()
+        # Log disconnection attempt
+        if self.client.connected:
+            logging.info(f"Disconnecting from {self.url}")
+        else:
+            logging.info(f"Shutting down from {self.url}")
 
-        # Print disconnection method
-        # TODO: replace with logger
-        print(f"[{id(self)}] Disconnected from {self.url}")
+        # Disconnect client
+        await self.client.shutdown()
+
+    def _disconnected(self, namespace) -> None:
+        # Log disconnection
+        logging.info(f"Disconnected from {namespace} at {self.url}")
 
     async def wait(self) -> None:
         # Wait for connection to end

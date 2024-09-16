@@ -1,5 +1,6 @@
 # Standard imports
 import asyncio
+import logging
 from typing import Dict, Set, Sequence
 
 # Internal imports
@@ -19,6 +20,9 @@ class HandlerManager:
         data: str,
         extra_tags: Dict[str, str],
     ):
+        # Log event
+        logging.debug(f"Received event {event} in {namespace}")
+
         # Generate handler tasks
         tasks = [
             handler.on_event(namespace, event, data, extra_tags)

@@ -1,4 +1,5 @@
 # Standard imports
+import logging
 from typing import Any, Dict
 
 # Internal imports
@@ -14,5 +15,8 @@ class PrintHandler(Handler):
         data: Dict[str, Any],
         tags: Dict[str, str],
     ) -> None:
-        # Print namespace, event, data, and tags
-        print({"namespace": namespace, "event": event, "data": data, "tags": tags})
+        # Generate message
+        message = str({"namespace": namespace, "event": event, "data": data, "tags": tags})
+
+        # Log namespace, event, data, and tags
+        logging.info(f"Data received: {message}")

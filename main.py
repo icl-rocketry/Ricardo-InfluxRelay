@@ -3,11 +3,15 @@ import argparse
 import asyncio
 import signal
 import sys
+import logging
 from typing import List
 
 # Internal imports
 from ricardoinfluxrelay.configuration import Configuration
 from ricardoinfluxrelay.socketrelay import SocketRelay
+
+# Set logging configuration
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
 
 async def main(sockets: List[SocketRelay]) -> None:
@@ -32,25 +36,25 @@ async def main(sockets: List[SocketRelay]) -> None:
         # Await socket disconnections
         await asyncio.gather(*disconnections)
 
+        # Log disconnections
+        logging.info("Sockets disconnected")
+
 
 async def exit(signal: signal.Signals, loop: asyncio.AbstractEventLoop) -> None:
-    # Forcibly exit the process
-    # TODO: Find fix for correctly stopping Socket.IO clients which are trying to connect
-    #       as python-socketio ignores "asyncio.CancelledError" in "_handle_reconnect".
-    #       Discussed in: https://github.com/miguelgrinberg/python-socketio/issues/1333.
-    sys.exit()
+    # Log exit signal
+    logging.info(f"Exit signal ({signal}) received")
 
-    # # Get tasks to cancel
-    # tasks = [task for task in asyncio.all_tasks() if task is not asyncio.current_task()]
+    # Get tasks to cancel
+    tasks = [task for task in asyncio.all_tasks() if task is not asyncio.current_task()]
 
-    # # Cancel tasks
-    # [task.cancel() for task in tasks]
+    # Cancel tasks
+    [task.cancel() for task in tasks]
 
-    # # Wait for tasks to finish
-    # await asyncio.gather(*tasks, return_exceptions=True)
+    # Wait for tasks to finish
+    await asyncio.gather(*tasks, return_exceptions=True)
 
-    # # Stop loop
-    # loop.stop()
+    # Stop loop
+    loop.stop()
 
 
 if __name__ == "__main__":
@@ -67,8 +71,14 @@ if __name__ == "__main__":
     # Load configuration
     configuration = Configuration.load_yaml(args.config)
 
+    # Log configuration load
+    logging.info("Configuration loaded")
+
     # Build sockets
     sockets = configuration.get_sockets()
+
+    # Log socket creation
+    logging.info("Sockets created")
 
     # Get main event loop
     loop = asyncio.get_event_loop()
@@ -79,6 +89,9 @@ if __name__ == "__main__":
             sig,
             lambda sig=sig: asyncio.create_task(exit(sig, loop)),
         )
+
+    # Log start
+    logging.info("Starting main execution")
 
     # Create main task
     mainTask = loop.create_task(main(sockets))

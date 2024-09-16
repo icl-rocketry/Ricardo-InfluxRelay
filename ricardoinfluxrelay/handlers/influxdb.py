@@ -1,9 +1,10 @@
 # Standard imports
+import logging
 from typing import Any, Dict, List
 
 # Third-party imports
-from influxdb_client import InfluxDBClient, WritePrecision
-from influxdb_client.client.write_api import SYNCHRONOUS
+from influxdb_client import WritePrecision
+from influxdb_client.client.influxdb_client_async import InfluxDBClientAsync
 
 # Internal imports
 from .sanitised import SanitisedHandler
@@ -22,14 +23,11 @@ class InfluxDBHandler(SanitisedHandler):
         # Initialise parent
         super().__init__(namespaces, tags)
 
-        # Declare InfluxDB client
-        self.client = InfluxDBClient(url=url, token=token, org=org)
-
-        # Set bucket name
+        # Store InfluxDB parameters
+        self.url = url
+        self.token = token
+        self.org = org
         self.bucket = bucket
-
-        # Create write API
-        self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
 
     async def _on_event(
         self,
@@ -43,9 +41,19 @@ class InfluxDBHandler(SanitisedHandler):
 
         # TODO: check types?
 
-        # Write point
-        self.write_api.write(
-            bucket=self.bucket,
-            record=point,
-            write_precision=WritePrecision.NS,
-        )
+        # Declare InfluxDB client
+        async with InfluxDBClientAsync(
+            url=self.url,
+            token=self.token,
+            org=self.org,
+        ) as client:
+            try:
+                # Try to write point
+                await client.write_api().write(
+                    bucket=self.bucket,
+                    record=point,
+                    write_precision=WritePrecision.NS,
+                )
+            except:
+                # Log error
+                logging.error(f"Failed to write to {self.url}")
