@@ -24,6 +24,12 @@ class SanitisedHandler(Handler):
         # Flatten data dictionary
         data_flat = flatten_json.flatten(data, separator=self.FLATTEN_DELIMITER)
 
+        # Ensure timestamp column not in data
+        # NOTE: this field must be protected, otherwise the timestamp
+        #       will not be interpreted safely from the line format 
+        if "timestamp" in data_flat.keys():
+            del data_flat["timestamp"]
+
         # Sanitise keys
         for pair in self.SANTISED_KEYS:
             data_flat = {key.replace(*pair): value for key, value in data_flat.items()}
