@@ -27,7 +27,7 @@ class SanitisedHandler(Handler):
 
         # Ensure timestamp column not in data
         # NOTE: this field must be protected, otherwise the timestamp
-        #       will not be interpreted safely from the line format 
+        #       will not be interpreted safely from the line format
         if "timestamp" in data_flat.keys():
             del data_flat["timestamp"]
 
@@ -44,6 +44,8 @@ class SanitisedHandler(Handler):
                 "fields": data_flat,
             }
         )
+
+    # TODO: revisit flattening strategy
 
     # Delimiter when flattening data
     FLATTEN_DELIMITER = "__"

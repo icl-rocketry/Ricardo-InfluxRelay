@@ -1,23 +1,35 @@
 # Standard imports
 from abc import ABC, abstractmethod
 import json
+import multiprocessing as mp
+import queue
 from typing import Any, Dict, List
 
 
 class Handler(ABC):
-    def __init__(self, namespaces: List[str], tags: Dict[str, str] = {}) -> None:
+    def __init__(
+        self,
+        namespaces: List[str],
+        tags: Dict[str, str] = {},
+    ) -> None:
         # Store namespaces
         self.namespaces = namespaces
 
         # Store tags
         self.tags = tags
 
-    def update_tags(self, tags: Dict[str, str]) -> None:
-        # Update tags
-        self.tags.update(tags)
+    def __del__(self):
+        # Ensure handler is stopped
+        self.stop()
+
+    def start(self) -> None:
+        pass
+
+    def stop(self) -> None:
+        pass
 
     @abstractmethod
-    async def _on_event(
+    def _on_event(
         self,
         namespace: str,
         event: str,
@@ -25,7 +37,7 @@ class Handler(ABC):
         tags: Dict[str, str],
     ) -> None: ...
 
-    async def on_event(
+    def on_event(
         self,
         namespace: str,
         event: str,
@@ -45,4 +57,66 @@ class Handler(ABC):
         tags = {**self.tags, **extra_tags}
 
         # Execute event method
-        await self._on_event(namespace, event, data_dict, tags)
+        self._on_event(namespace, event, data_dict, tags)
+
+
+class HandlerProcess(mp.Process):
+
+    def __init__(
+        self,
+        queue: mp.Queue,
+        handler: Handler,
+        *args,
+        **kwargs,
+    ) -> None:
+        # Initialise parent
+        super().__init__(daemon=True, *args, **kwargs)
+
+        # Store event queue
+        self.queue = queue
+
+        # Store handler
+        self.handler = handler
+
+        # Declare stop event
+        self.stop = mp.Event()
+
+    def run(self):
+        # Start handler
+        self.handler.start()
+
+        # Run loop while stop event is not set
+        while not self.stop.is_set():
+            try:
+                # Get event from queue
+                event = self.queue.get(timeout=self.QUEUE_TIMEOUT)
+
+                # Check for sentinel
+                if event is self.SENTINEL:
+                    # Set stop event
+                    self.stop.set()
+                    continue
+
+                # Call handler event
+                self.handler.on_event(**event)
+
+            except queue.Empty:
+                # TODO: log empty queue?
+                pass
+
+            except:
+                # TODO: handle other exceptions?
+                pass
+
+        # Stop handler
+        self.handler.stop()
+
+    def shutdown(self):
+        # Set stop event
+        self.stop.set()
+
+    # Sentinel to stop process
+    SENTINEL = None
+
+    # Queue timeout [s]
+    QUEUE_TIMEOUT = 20e-3

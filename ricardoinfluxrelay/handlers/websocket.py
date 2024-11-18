@@ -29,8 +29,9 @@ class WebSocketHandler(Handler):
         # Create list of clients
         self.clients: List[WebSocketHanderClient] = []
 
+    def start(self) -> None:
         # Create server
-        self.server = websockets.serve(self.handler, host, port)
+        self.server = websockets.serve(self.handler, self.host, self.port)
 
         # Start server
         asyncio.get_event_loop().run_until_complete(self.server)
@@ -57,7 +58,7 @@ class WebSocketHandler(Handler):
             if client is not None:
                 self.clients.remove(client)
 
-    async def _on_event(
+    def _on_event(
         self,
         namespace: str,
         event: str,
@@ -70,19 +71,15 @@ class WebSocketHandler(Handler):
         # Re-serialise packet
         message = json.dumps(data)
 
-        # Spawn send tasks
-        tasks = [
+        # Send events
+        [
             client.on_event(message)
             for client in self.clients
             if client.namespace == namespace and client.event == event
         ]
 
-        # Wait for sends to finish
-        await asyncio.gather(*tasks)
-
 
 class WebSocketHanderClient:
-    # TODO: inherit from Handler class
 
     def __init__(
         self,

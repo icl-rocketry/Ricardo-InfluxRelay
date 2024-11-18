@@ -8,7 +8,7 @@ from .handler import Handler
 
 class PrintHandler(Handler):
 
-    async def _on_event(
+    def _on_event(
         self,
         namespace: str,
         event: str,
@@ -16,7 +16,14 @@ class PrintHandler(Handler):
         tags: Dict[str, str],
     ) -> None:
         # Generate message
-        message = str({"namespace": namespace, "event": event, "data": data, "tags": tags})
+        message = str(
+            {
+                "namespace": namespace,
+                "event": event,
+                "data": data,
+                "tags": tags,
+            }
+        )
 
         # Log namespace, event, data, and tags
         logging.info(f"Data received: {message}")

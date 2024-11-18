@@ -3,11 +3,12 @@ import logging
 from typing import Any, Dict, List
 
 # Third-party imports
-from influxdb_client import WritePrecision
-from influxdb_client.client.influxdb_client_async import InfluxDBClientAsync
+from influxdb_client import InfluxDBClient, WritePrecision
 
 # Internal imports
 from .sanitised import SanitisedHandler
+
+# TODO: implement QuestDB specific library?
 
 
 class InfluxDBHandler(SanitisedHandler):
@@ -29,7 +30,14 @@ class InfluxDBHandler(SanitisedHandler):
         self.org = org
         self.bucket = bucket
 
-    async def _on_event(
+    def start(self):
+        # Create InfluxDB client
+        self.client = InfluxDBClient(url=self.url, token=self.token, org=self.org)
+
+        # Create write API
+        self.write_api = self.client.write_api()
+
+    def _on_event(
         self,
         namespace: str,
         event: str,
@@ -41,19 +49,13 @@ class InfluxDBHandler(SanitisedHandler):
 
         # TODO: check types?
 
-        # Declare InfluxDB client
-        async with InfluxDBClientAsync(
-            url=self.url,
-            token=self.token,
-            org=self.org,
-        ) as client:
-            try:
-                # Try to write point
-                await client.write_api().write(
-                    bucket=self.bucket,
-                    record=point,
-                    write_precision=WritePrecision.NS,
-                )
-            except:
-                # Log error
-                logging.error(f"Failed to write to {self.url}")
+        try:
+            # Try to write point
+            self.write_api.write(
+                bucket=self.bucket,
+                record=point,
+                write_precision=WritePrecision.NS,
+            )
+        except:
+            # Log error
+            logging.error(f"Failed to write to {self.url}")

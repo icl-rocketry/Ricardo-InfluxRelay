@@ -35,7 +35,7 @@ class SocketRelay:
         # Create handler
         async def handler(event: str, namespace: str, data: str):
             # Call event handler
-            await self.handler_manager.on_event(namespace, event, data, tags)
+            self.handler_manager.on_event(namespace, event, data, tags)
 
         # Register handler
         self.client.on(

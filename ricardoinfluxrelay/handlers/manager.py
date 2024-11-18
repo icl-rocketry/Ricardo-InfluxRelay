@@ -1,19 +1,57 @@
 # Standard imports
-import asyncio
+from dataclasses import dataclass
 import logging
-from typing import Dict, Set, Sequence
+import multiprocessing as mp
+from typing import Dict, List, Set, Sequence
 
 # Internal imports
-from .handler import Handler
+from .handler import Handler, HandlerProcess
+
+
+@dataclass
+class HandlerSet:
+    handler: Handler
+    queue: mp.Queue
+    process: HandlerProcess
+
+    @classmethod
+    def generate(cls, handler: Handler):
+        # Create queue
+        queue = mp.Queue()
+
+        # Generate process
+        process = HandlerProcess(queue, handler)
+
+        # Generate handler set
+        return HandlerSet(handler, queue, process)
 
 
 class HandlerManager:
 
     def __init__(self, handlers: Sequence[Handler]):
-        # Store handlers
-        self.handlers = handlers
+        # Create handler sets
+        self.handlers = [HandlerSet.generate(handler) for handler in handlers]
 
-    async def on_event(
+        # Start processes
+        self.start()
+
+    def __del__(self):
+        # Stop processes
+        self.stop()
+
+    def start(self):
+        # Iterate through handlers
+        for handler in self.handlers:
+            # Start process
+            handler.process.start()
+
+    def stop(self):
+        # Iterate through processes
+        for handler in self.handlers:
+            # Stop process
+            handler.process.shutdown()
+
+    def on_event(
         self,
         namespace: str,
         event: str,
@@ -23,22 +61,26 @@ class HandlerManager:
         # Log event
         logging.debug(f"Received event {event} in {namespace}")
 
-        # Generate handler tasks
-        tasks = [
-            handler.on_event(namespace, event, data, extra_tags)
-            for handler in self.handlers
-        ]
-
-        # Execute handler tasks
-        await asyncio.gather(*tasks)
+        # Iterate through handlers
+        for handler in self.handlers:
+            # Send event to queue
+            # TODO: replace with dataclass?
+            handler.queue.put(
+                {
+                    "namespace": namespace,
+                    "event": event,
+                    "data": data,
+                    "extra_tags": extra_tags,
+                }
+            )
 
     @property
-    def handlers(self) -> Sequence[Handler]:
+    def handlers(self) -> List[HandlerSet]:
         # Return handlers
         return self._handlers
 
     @handlers.setter
-    def handlers(self, value: Sequence[Handler]):
+    def handlers(self, value: List[HandlerSet]):
         # Update handlers
         self._handlers = value
 
@@ -46,8 +88,8 @@ class HandlerManager:
         self.namespaces = set(
             [
                 namespace
-                for handler in self.handlers  # iterate through handlers
-                for namespace in handler.namespaces  # iterate through handler namespaces
+                for handler in self.handlers  # Iterate through handlers
+                for namespace in handler.handler.namespaces  # Iterate through handler namespaces
             ]
         )
 
