@@ -46,14 +46,6 @@ class Process(ABC, mp.Process):
                 # Get object from input queue
                 obj = self.inputQueue.get(timeout=self.QUEUE_TIMEOUT)
 
-                # Check for sentinel
-                if obj is self.SENTINEL:
-                    # Set run event
-                    self.stopProcess.set()
-
-                    # Continue loop
-                    continue
-
                 # Call input handler
                 self.input(obj)
 
@@ -75,9 +67,6 @@ class Process(ABC, mp.Process):
     def get(self, block: bool = True, timeout: float | None = None) -> Any:
         # Return object on send queue
         return self.outputQueue.get(block, timeout)
-
-    # Sentinel to stop process
-    SENTINEL = None
 
     # Queue timeout [s]
     QUEUE_TIMEOUT = 20e-3
