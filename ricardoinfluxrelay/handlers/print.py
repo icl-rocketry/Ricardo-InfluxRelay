@@ -8,6 +8,12 @@ from .handler import Handler
 
 class PrintHandler(Handler):
 
+    def initialise(self) -> None:
+        pass
+
+    def deinitialise(self) -> None:
+        pass
+
     def _on_event(
         self,
         namespace: str,

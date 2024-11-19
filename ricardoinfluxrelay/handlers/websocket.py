@@ -18,9 +18,11 @@ class WebSocketHandler(Handler):
         host: str,
         port: int,
         tags: Dict[str, str] = {},
+        *args,
+        **kwargs,
     ):
         # Initialise parent
-        super().__init__(namespaces, tags)
+        super().__init__(namespaces, tags, *args, **kwargs)
 
         # Store host and port
         self.host = host
@@ -29,14 +31,14 @@ class WebSocketHandler(Handler):
         # Create list of clients
         self.clients: List[WebSocketHanderClient] = []
 
-    def start(self) -> None:
+    def initialise(self) -> None:
         # Create server
-        self.server = websockets.serve(self.handler, self.host, self.port)
+        self.server = websockets.serve(self._handler, self.host, self.port)
 
         # Start server
         asyncio.get_event_loop().run_until_complete(self.server)
 
-    async def handler(
+    async def _handler(
         self,
         websocket: websockets.WebSocketServerProtocol,
         path: str,

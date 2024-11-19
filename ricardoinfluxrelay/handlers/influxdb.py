@@ -20,9 +20,11 @@ class InfluxDBHandler(SanitisedHandler):
         bucket: str = "",
         tags: Dict[str, str] = {},
         token: str = "",
+        *args,
+        **kwargs,
     ):
         # Initialise parent
-        super().__init__(namespaces, tags)
+        super().__init__(namespaces, tags, *args, **kwargs)
 
         # Store InfluxDB parameters
         self.url = url
@@ -30,12 +32,15 @@ class InfluxDBHandler(SanitisedHandler):
         self.org = org
         self.bucket = bucket
 
-    def start(self):
+    def initialise(self) -> None:
         # Create InfluxDB client
         self.client = InfluxDBClient(url=self.url, token=self.token, org=self.org)
 
         # Create write API
         self.write_api = self.client.write_api()
+
+    def deinitialise(self) -> None:
+        pass
 
     def _on_event(
         self,

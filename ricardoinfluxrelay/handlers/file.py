@@ -8,7 +8,14 @@ from .sanitised import SanitisedHandler
 
 class FileHandler(SanitisedHandler):
 
-    def __init__(self, namespaces: List[str], filepath: str, tags: Dict[str, str] = {}):
+    def __init__(
+        self,
+        namespaces: List[str],
+        filepath: str,
+        tags: Dict[str, str] = {},
+        *args,
+        **kwargs,
+    ):
         # Ensure only a single namespace is provided
         if len(namespaces) != 1:
             raise ValueError(
@@ -18,19 +25,19 @@ class FileHandler(SanitisedHandler):
             )
 
         # Initialise parent
-        super().__init__(namespaces, tags)
+        super().__init__(namespaces, tags, *args, **kwargs)
 
         # Store filepath
         self.filepath = filepath
 
-    def start(self):
+    def initialise(self) -> None:
         # Ensure directory exists
         os.makedirs(os.path.dirname(os.path.abspath(self.filepath)), exist_ok=True)
 
         # Open file (append mode)
         self.fid = open(self.filepath, "a")
 
-    def stop(self):
+    def deinitialise(self) -> None:
         # Close file
         self.fid.close()
 

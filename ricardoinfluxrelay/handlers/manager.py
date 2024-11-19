@@ -1,36 +1,16 @@
 # Standard imports
-from dataclasses import dataclass
 import logging
-import multiprocessing as mp
-from typing import Dict, List, Set, Sequence
+from typing import Dict, Set, Sequence
 
 # Internal imports
-from .handler import Handler, HandlerProcess
-
-
-@dataclass
-class HandlerSet:
-    handler: Handler
-    queue: mp.Queue
-    process: HandlerProcess
-
-    @classmethod
-    def generate(cls, handler: Handler):
-        # Create queue
-        queue = mp.Queue()
-
-        # Generate process
-        process = HandlerProcess(queue, handler)
-
-        # Generate handler set
-        return HandlerSet(handler, queue, process)
+from .handler import Handler
 
 
 class HandlerManager:
 
     def __init__(self, handlers: Sequence[Handler]):
         # Create handler sets
-        self.handlers = [HandlerSet.generate(handler) for handler in handlers]
+        self.handlers = handlers
 
         # Start processes
         self.start()
@@ -43,13 +23,13 @@ class HandlerManager:
         # Iterate through handlers
         for handler in self.handlers:
             # Start process
-            handler.process.start()
+            handler.start()
 
     def stop(self):
         # Iterate through processes
         for handler in self.handlers:
             # Stop process
-            handler.process.shutdown()
+            handler.shutdown()
 
     def on_event(
         self,
@@ -65,22 +45,23 @@ class HandlerManager:
         for handler in self.handlers:
             # Send event to queue
             # TODO: replace with dataclass?
-            handler.queue.put(
+            handler.put(
                 {
                     "namespace": namespace,
                     "event": event,
                     "data": data,
                     "extra_tags": extra_tags,
-                }
+                },
+                block=False,
             )
 
     @property
-    def handlers(self) -> List[HandlerSet]:
+    def handlers(self) -> Sequence[Handler]:
         # Return handlers
         return self._handlers
 
     @handlers.setter
-    def handlers(self, value: List[HandlerSet]):
+    def handlers(self, value: Sequence[Handler]):
         # Update handlers
         self._handlers = value
 
@@ -89,7 +70,7 @@ class HandlerManager:
             [
                 namespace
                 for handler in self.handlers  # Iterate through handlers
-                for namespace in handler.handler.namespaces  # Iterate through handler namespaces
+                for namespace in handler.namespaces  # Iterate through handler namespaces
             ]
         )
 
