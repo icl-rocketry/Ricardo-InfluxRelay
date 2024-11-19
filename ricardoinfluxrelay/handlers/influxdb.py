@@ -7,6 +7,7 @@ from influxdb_client import InfluxDBClient, WritePrecision
 
 # Internal imports
 from .sanitised import SanitisedHandler
+from ricardoinfluxrelay.event import Event
 
 # TODO: implement QuestDB specific library?
 
@@ -42,15 +43,9 @@ class InfluxDBHandler(SanitisedHandler):
     def deinitialise(self) -> None:
         pass
 
-    def _on_event(
-        self,
-        namespace: str,
-        event: str,
-        data: Dict[str, Any],
-        tags: Dict[str, str],
-    ) -> None:
+    def _on_event(self, event: Event) -> None:
         # Convert data to point
-        point = self._to_point(event, data, tags)
+        point = self._to_point(event)
 
         # TODO: check types?
 

@@ -1,9 +1,9 @@
 # Standard imports
 import logging
-from typing import Any, Dict
 
 # Internal imports
 from .handler import Handler
+from ricardoinfluxrelay.event import Event
 
 
 class PrintHandler(Handler):
@@ -14,22 +14,6 @@ class PrintHandler(Handler):
     def deinitialise(self) -> None:
         pass
 
-    def _on_event(
-        self,
-        namespace: str,
-        event: str,
-        data: Dict[str, Any],
-        tags: Dict[str, str],
-    ) -> None:
-        # Generate message
-        message = str(
-            {
-                "namespace": namespace,
-                "event": event,
-                "data": data,
-                "tags": tags,
-            }
-        )
-
+    def _on_event(self, event: Event) -> None:
         # Log namespace, event, data, and tags
-        logging.info(f"Data received: {message}")
+        logging.info(f"Data received: {event}")

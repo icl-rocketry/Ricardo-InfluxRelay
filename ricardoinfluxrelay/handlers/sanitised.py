@@ -1,29 +1,22 @@
-# Standard imports
-from typing import Any, Dict
-
 # Third-party imports
 import flatten_json
 from influxdb_client import Point
 
 # Internal imports
 from .handler import Handler
+from ricardoinfluxrelay.event import Event
 
 
 class SanitisedHandler(Handler):
 
-    def _to_point(
-        self,
-        event: str,
-        data: Dict[str, Any],
-        tags: Dict[str, str],
-    ) -> Point:
+    def _to_point(self, event: Event) -> Point:
         # Extract timestamp
-        timestamp = data["timestamp"]
+        timestamp = event.data["timestamp"]
         timestamp_ns = int(timestamp * 1e6)
 
         # Flatten data dictionary
         # TODO: extract subset?
-        data_flat = flatten_json.flatten(data, separator=self.FLATTEN_DELIMITER)
+        data_flat = flatten_json.flatten(event.data, separator=self.FLATTEN_DELIMITER)
 
         # Ensure timestamp column not in data
         # NOTE: this field must be protected, otherwise the timestamp
@@ -39,8 +32,8 @@ class SanitisedHandler(Handler):
         return Point.from_dict(
             {
                 "time": timestamp_ns,
-                "measurement": event,
-                "tags": tags,
+                "measurement": event.event,
+                "tags": event.tags,
                 "fields": data_flat,
             }
         )

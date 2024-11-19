@@ -8,6 +8,7 @@ import websockets
 
 # Internal imports
 from .handler import Handler
+from ricardoinfluxrelay.event import Event
 
 
 class WebSocketHandler(Handler):
@@ -60,24 +61,21 @@ class WebSocketHandler(Handler):
             if client is not None:
                 self.clients.remove(client)
 
-    def _on_event(
-        self,
-        namespace: str,
-        event: str,
-        data: Dict[str, Any],
-        tags: Dict[str, str],
-    ):
-        # Add tags to packet
-        data["tags"] = tags
+    def _on_event(self, event: Event):
+        # Extract data from event
+        data = event.data
 
-        # Re-serialise packet
+        # Add tags to data
+        data["tags"] = event.tags
+
+        # Re-serialise data
         message = json.dumps(data)
 
         # Send events
         [
             client.on_event(message)
             for client in self.clients
-            if client.namespace == namespace and client.event == event
+            if client.namespace == event.namespace and client.event == event.event
         ]
 
 
