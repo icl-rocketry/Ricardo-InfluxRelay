@@ -1,13 +1,13 @@
 # Standard imports
 import os
-from typing import Any, Dict, List
+from typing import Dict, List
 
 # Internal imports
-from .sanitised import SanitisedHandler
+from .handler import Handler
 from ricardoinfluxrelay.event import Event
 
 
-class FileHandler(SanitisedHandler):
+class FileHandler(Handler):
 
     def __init__(
         self,
@@ -44,7 +44,7 @@ class FileHandler(SanitisedHandler):
 
     def _on_event(self, event: Event) -> None:
         # Convert data to point
-        point = self._to_point(event)
+        point = event.to_point()
 
         # TODO: check types?
 
