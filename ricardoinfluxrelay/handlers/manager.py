@@ -1,9 +1,10 @@
 # Standard imports
 import logging
-from typing import Dict, Set, Sequence
+from typing import Set, Sequence
 
 # Internal imports
 from .handler import Handler
+from ricardoinfluxrelay.event import Event
 
 
 class HandlerManager:
@@ -31,29 +32,14 @@ class HandlerManager:
             # Stop process
             handler.shutdown()
 
-    def on_event(
-        self,
-        namespace: str,
-        event: str,
-        data: str,
-        extra_tags: Dict[str, str],
-    ):
+    def on_event(self, event: Event):
         # Log event
-        logging.debug(f"Received event {event} in {namespace}")
+        logging.debug(f"Received event {event.event} in {event.namespace}")
 
         # Iterate through handlers
         for handler in self.handlers:
             # Send event to queue
-            # TODO: replace with dataclass?
-            handler.put(
-                {
-                    "namespace": namespace,
-                    "event": event,
-                    "data": data,
-                    "extra_tags": extra_tags,
-                },
-                block=False,
-            )
+            handler.put(event, block=False)
 
     @property
     def handlers(self) -> Sequence[Handler]:

@@ -27,30 +27,26 @@ class Handler(Process):
     @abstractmethod
     def _on_event(self, event: Event) -> None: ...
 
-    def on_event(
-        self,
-        namespace: str,
-        event: str,
-        data: str,
-        extra_tags: Dict[str, str],
-    ) -> None:
+    def on_event(self, event: Event) -> None:
         # Return if event namespace not in handler namespaces
-        if namespace not in self.namespaces:
+        if event.namespace not in self.namespaces:
             return
 
-        # Generate tags
-        tags = {**self.tags, **extra_tags}
-
-        # Create event object
-        eventObj = Event(namespace, event, data, tags)
+        # Update tags
+        event.tags = {**self.tags, **event.tags}
 
         # Execute event method
-        self._on_event(eventObj)
+        self._on_event(event)
 
     def input(self, obj: Any) -> None:
         try:
+            # Check object type
+            # TODO: add message
+            if not isinstance(obj, Event):
+                raise ValueError
+
             # Call event handler
-            self.on_event(**obj)
+            self.on_event(obj)
         except:
             # TODO: log error
             pass

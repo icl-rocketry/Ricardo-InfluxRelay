@@ -6,6 +6,7 @@ from typing import Dict
 from socketio import AsyncClient
 
 # Internal imports
+from ricardoinfluxrelay.event import Event
 from ricardoinfluxrelay.handlers import HandlerManager
 
 
@@ -34,8 +35,11 @@ class SocketRelay:
 
         # Create handler
         async def handler(event: str, namespace: str, data: str):
+            # Create event object
+            eventObj = Event(namespace, event, data, tags)
+
             # Call event handler
-            self.handler_manager.on_event(namespace, event, data, tags)
+            self.handler_manager.on_event(eventObj)
 
         # Register handler
         self.client.on(
