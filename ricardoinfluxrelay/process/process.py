@@ -19,11 +19,30 @@ class Process(ABC, mp.Process):
         # Declare run event
         self.stopProcess = mp.Event()
 
-    @abstractmethod
-    def initialise(self) -> None: ...
+        # Set initialisation flag
+        self.initialised = False
 
     @abstractmethod
-    def deinitialise(self) -> None: ...
+    def _initialise(self) -> bool: ...
+
+    @abstractmethod
+    def _deinitialise(self) -> None: ...
+
+    def initialise(self) -> None:
+        # Return if already initialised
+        if self.initialised:
+            return
+
+        # Initialise process
+        self.initialised = self._initialise()
+
+    def deinitialise(self) -> None:
+        # Return if already deinitialised
+        if not self.initialised:
+            return
+
+        # Deinitialise process
+        self._deinitialise()
 
     @abstractmethod
     def input(self, obj: Any) -> None: ...
@@ -31,7 +50,10 @@ class Process(ABC, mp.Process):
     def output(self, obj: Any) -> None:
         # Put object on output queue
         self.outputQueue.put_nowait(obj)
-    
+
+    def update(self) -> None:
+        pass
+
     def shutdown(self) -> None:
         # Stop process
         self.stopProcess.set()
@@ -46,6 +68,11 @@ class Process(ABC, mp.Process):
                 # Get object from input queue
                 obj = self.inputQueue.get(timeout=self.QUEUE_TIMEOUT)
 
+                # Abort loop iteration if not initialised
+                # NOTE: this ensures that the queue does not fill up
+                if not self.initialised:
+                    continue
+
                 # Call input handler
                 self.input(obj)
 
@@ -56,6 +83,10 @@ class Process(ABC, mp.Process):
             except:
                 # TODO: handle other exceptions?
                 pass
+
+            # Update process
+            # NOTE: only called when initialised
+            self.update()
 
         # Deinitialise process
         self.deinitialise()

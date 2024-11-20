@@ -33,15 +33,24 @@ class InfluxDBHandler(Handler):
         self.org = org
         self.bucket = bucket
 
-    def initialise(self) -> None:
+    def _initialise(self) -> bool:
         # Create InfluxDB client
         self.client = InfluxDBClient(url=self.url, token=self.token, org=self.org)
 
         # Create write API
         self.write_api = self.client.write_api()
 
-    def deinitialise(self) -> None:
-        pass
+        # Log initialisation
+        # TODO: add additional information
+        logging.info("InfluxDB handler initialised")
+
+        # Return success
+        return True
+
+    def _deinitialise(self) -> None:
+        # Log deinitialisation
+        # TODO: add additional information
+        logging.info("InfluxDB handler deinitialised")
 
     def _on_event(self, event: Event) -> None:
         # Convert data to point

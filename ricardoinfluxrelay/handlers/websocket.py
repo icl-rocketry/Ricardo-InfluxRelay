@@ -1,7 +1,8 @@
 # Standard imports
 import asyncio
 import json
-from typing import Any, Dict, List
+import logging
+from typing import Dict, List
 
 # Third-party imports
 import websockets
@@ -32,12 +33,33 @@ class WebSocketHandler(Handler):
         # Create list of clients
         self.clients: List[WebSocketHanderClient] = []
 
-    def initialise(self) -> None:
+        # TODO: handler requires major fixes
+        raise NotImplementedError
+
+    async def run_server(self):
         # Create server
         self.server = websockets.serve(self._handler, self.host, self.port)
 
-        # Start server
-        asyncio.get_event_loop().run_until_complete(self.server)
+        # Return server
+        return self.server
+
+    def _initialise(self) -> bool:
+        # Run server
+        asyncio.run(self.run_server())
+
+        # Log initialisation
+        # TODO: add additional information
+        logging.info("WebSocket handler initialised")
+
+        # Return success
+        return True
+
+    def _deinitialise(self) -> None:
+        # TODO: stop server
+
+        # Log deinitialisation
+        # TODO: add additional information
+        logging.info("WebSocket handler deinitialised")
 
     async def _handler(
         self,

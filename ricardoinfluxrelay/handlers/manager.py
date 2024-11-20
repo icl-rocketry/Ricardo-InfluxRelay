@@ -10,29 +10,26 @@ from ricardoinfluxrelay.event import Event
 class HandlerManager:
 
     def __init__(self, handlers: Sequence[Handler]):
-        # Create handler sets
+        # Store handlers
         self.handlers = handlers
 
-        # Start processes
-        self.start()
-
-    def __del__(self):
+    def __del__(self) -> None:
         # Stop processes
         self.stop()
 
-    def start(self):
+    def start(self) -> None:
         # Iterate through handlers
         for handler in self.handlers:
             # Start process
             handler.start()
 
-    def stop(self):
+    def stop(self) -> None:
         # Iterate through processes
         for handler in self.handlers:
             # Stop process
             handler.shutdown()
 
-    def on_event(self, event: Event):
+    def on_event(self, event: Event) -> None:
         # Log event
         logging.debug(f"Received event {event.event} in {event.namespace}")
 

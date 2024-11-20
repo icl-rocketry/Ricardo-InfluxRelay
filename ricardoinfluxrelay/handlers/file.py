@@ -1,4 +1,5 @@
 # Standard imports
+import logging
 import os
 from typing import Dict, List
 
@@ -31,16 +32,34 @@ class FileHandler(Handler):
         # Store filepath
         self.filepath = filepath
 
-    def initialise(self) -> None:
-        # Ensure directory exists
-        os.makedirs(os.path.dirname(os.path.abspath(self.filepath)), exist_ok=True)
+    def _initialise(self) -> bool:
+        try:
+            # Ensure directory exists
+            os.makedirs(os.path.dirname(os.path.abspath(self.filepath)), exist_ok=True)
 
-        # Open file (append mode)
-        self.fid = open(self.filepath, "a")
+            # Open file (append mode)
+            self.fid = open(self.filepath, "a")
 
-    def deinitialise(self) -> None:
+            # Log initialisation
+            # TODO: add additional information
+            logging.info("File handler initialised")
+
+            # Return success
+            return True
+        except:
+            # Log initialisation failure
+            logging.error("File handler failed to initialise")
+
+            # Return failure
+            return False
+
+    def _deinitialise(self) -> None:
         # Close file
         self.fid.close()
+
+        # Log deinitialisation
+        # TODO: add additional information
+        logging.info("File handler deinitialised")
 
     def _on_event(self, event: Event) -> None:
         # Convert data to point

@@ -8,12 +8,19 @@ from ricardoinfluxrelay.event import Event
 
 class PrintHandler(Handler):
 
-    def initialise(self) -> None:
-        pass
+    def _initialise(self) -> bool:
+        # Log initialisation
+        # TODO: add additional information
+        logging.info("Print handler initialised")
 
-    def deinitialise(self) -> None:
-        pass
+        # Return success
+        return True
+
+    def _deinitialise(self) -> None:
+        # Log deinitialisation
+        # TODO: add additional information
+        logging.info("Print handler deinitialised")
 
     def _on_event(self, event: Event) -> None:
-        # Log namespace, event, data, and tags
+        # Log event
         logging.info(f"Data received: {event}")
