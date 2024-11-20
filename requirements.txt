@@ -1,5 +1,5 @@
 influxdb-client
-python-socketio[asyncio_client]
+python-socketio[client]
 PyYAML
 flatten_json
 websockets
