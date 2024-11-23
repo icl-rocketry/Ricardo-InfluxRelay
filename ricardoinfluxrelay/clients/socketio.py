@@ -1,17 +1,16 @@
 # Standard imports
 import logging
-from time import time
 from typing import Any, Dict, List, Set, Union
 
 # Third-party imports
-from socketio import Client
+from socketio import AsyncClient
 
 # Internal imports
 from ricardoinfluxrelay.event import Event
-from ricardoinfluxrelay.process import Process
+from ricardoinfluxrelay.process import AsyncProcess
 
 
-class SocketIOClient(Process):
+class SocketIOClient(AsyncProcess):
 
     def __init__(
         self,
@@ -34,10 +33,10 @@ class SocketIOClient(Process):
         # Declare connection time variable
         self.previousAttemptTime = 0
 
-    def _initialise(self) -> bool:
+    async def _initialise(self) -> bool:
         # Declare SocketIO client
         # TODO: try to revert to async-based client?
-        self.client = Client(handle_sigint=False, ssl_verify=self.ssl_verify)
+        self.client = AsyncClient(handle_sigint=False, ssl_verify=self.ssl_verify)
 
         # Register (disconnection messages)
         self.client.on(event="connect", namespace="*", handler=self._connected)
@@ -51,35 +50,31 @@ class SocketIOClient(Process):
         )
 
         # Connect client
-        self.connect()
+        await self.connect()
 
         # Return success
         # NOTE: due to autoreconnect, this does not indicate whether the client connected successfully
         return True
 
-    def _deinitialise(self) -> None:
+    async def _deinitialise(self) -> None:
         # Disconnect client
-        self.disconnect()
+        await self.disconnect()
 
-    def input(self, obj: Any) -> None:
+    async def input(self, obj: Any) -> None:
         pass
 
-    def update(self) -> None:
-        # Ensure client is connected
-        self.autoconnect()
-
-    def connect(self) -> None:
+    async def connect(self) -> None:
         # Log connection attempt
         logging.info(f"Attempting connection to {self.url}")
 
         # Connect client
         try:
-            self.client.connect(self.url, namespaces=self.namespaces, wait=False)
+            await self.client.connect(self.url, namespaces=self.namespaces, retry=True)
         except:
             # TODO: log failure to connect
             pass
 
-    def disconnect(self) -> None:
+    async def disconnect(self) -> None:
         # Log disconnection attempt
         if self.client.connected:
             logging.info(f"Disconnecting from {self.url}")
@@ -87,22 +82,7 @@ class SocketIOClient(Process):
             logging.info(f"Shutting down from {self.url}")
 
         # Disconnect client
-        self.client.shutdown()
-
-    def autoconnect(self) -> None:
-        # Return if client is already connected
-        if self.client.connected:
-            return
-
-        # Return if insufficient time has passed to attempt connection
-        if time() - self.previousAttemptTime < self.RECONNECT_PERIOD:
-            return
-
-        # Attempt connection
-        self.connect()
-
-        # Update connection attempt time
-        self.previousAttemptTime = time()
+        await self.client.shutdown()
 
     def _connected(self, namespace: str) -> None:
         # Log connection
@@ -118,6 +98,3 @@ class SocketIOClient(Process):
 
         # Call event handler
         self.outputQueue.put_nowait(eventObj)
-
-    # Reconnect period [s]
-    RECONNECT_PERIOD = 5
