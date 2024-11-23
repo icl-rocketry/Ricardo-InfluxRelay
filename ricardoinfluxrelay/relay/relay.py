@@ -5,13 +5,19 @@ from __future__ import annotations
 from copy import deepcopy
 import multiprocessing as mp
 from time import sleep
+from typing import Union
 
 # Third-party imports
 import yaml
 
 # Internal imports
 from ricardoinfluxrelay.clients import ClientManager, SocketIOClient
-from ricardoinfluxrelay.handlers import HandlerManager, Handler, get_handler_type
+from ricardoinfluxrelay.handlers import (
+    HandlerManager,
+    Handler,
+    AsyncHandler,
+    get_handler_type,
+)
 
 
 class Relay:
@@ -99,7 +105,7 @@ class Relay:
 
     # TODO: move elsewhere?
     @staticmethod
-    def generate_handler(configuration) -> Handler:
+    def generate_handler(configuration) -> Union[Handler, AsyncHandler]:
         # Make a copy of the configuration
         configurationCopy = deepcopy(configuration)
 
