@@ -8,11 +8,11 @@ from typing import Dict, List
 import websockets
 
 # Internal imports
-from .handler import Handler
+from .handler import AsyncHandler
 from ricardoinfluxrelay.event import Event
 
 
-class WebSocketHandler(Handler):
+class WebSocketHandler(AsyncHandler):
 
     def __init__(
         self,
@@ -33,19 +33,9 @@ class WebSocketHandler(Handler):
         # Create list of clients
         self.clients: List[WebSocketHanderClient] = []
 
-        # TODO: handler requires major fixes
-        raise NotImplementedError
-
-    async def run_server(self):
+    async def _initialise(self) -> bool:
         # Create server
-        self.server = websockets.serve(self._handler, self.host, self.port)
-
-        # Return server
-        return self.server
-
-    def _initialise(self) -> bool:
-        # Run server
-        asyncio.run(self.run_server())
+        self.server = await websockets.serve(self._handler, self.host, self.port)
 
         # Log initialisation
         # TODO: add additional information
@@ -54,7 +44,7 @@ class WebSocketHandler(Handler):
         # Return success
         return True
 
-    def _deinitialise(self) -> None:
+    async def _deinitialise(self) -> None:
         # TODO: stop server
 
         # Log deinitialisation
@@ -68,6 +58,8 @@ class WebSocketHandler(Handler):
     ):
         # Declare client (to prevent unbound behaviour)
         client = None
+
+        # TODO: log connection
 
         try:
             # Create client object
@@ -83,7 +75,9 @@ class WebSocketHandler(Handler):
             if client is not None:
                 self.clients.remove(client)
 
-    def _on_event(self, event: Event):
+        # TODO: log disconnection
+
+    async def _on_event(self, event: Event):
         # Extract data from event
         data = event.data
 
@@ -94,11 +88,19 @@ class WebSocketHandler(Handler):
         message = json.dumps(data)
 
         # Send events
-        [
+        tasks = [
             client.on_event(message)
             for client in self.clients
             if client.namespace == event.namespace and client.event == event.event
         ]
+
+        # Wait for sends to finish
+        await asyncio.gather(*tasks)
+
+    async def update(self) -> None:
+        # Add additional sleep to yield to event loop on every iteration
+        # TODO: address this bodge
+        await asyncio.sleep(10e-3)
 
 
 class WebSocketHanderClient:

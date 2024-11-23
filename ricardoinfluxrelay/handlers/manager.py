@@ -1,15 +1,15 @@
 # Standard imports
 import logging
-from typing import Set, Sequence
+from typing import Set, Sequence, Union
 
 # Internal imports
-from .handler import Handler
+from .handler import Handler, AsyncHandler
 from ricardoinfluxrelay.event import Event
 
 
 class HandlerManager:
 
-    def __init__(self, handlers: Sequence[Handler]):
+    def __init__(self, handlers: Sequence[Union[Handler, AsyncHandler]]):
         # Store handlers
         self.handlers = handlers
 
@@ -29,6 +29,8 @@ class HandlerManager:
             # Stop process
             handler.shutdown()
 
+        # TODO: wait/check for processes to shutdown?
+
     def on_event(self, event: Event) -> None:
         # Log event
         logging.debug(f"Received event {event.event} in {event.namespace}")
@@ -39,12 +41,12 @@ class HandlerManager:
             handler.put(event, block=False)
 
     @property
-    def handlers(self) -> Sequence[Handler]:
+    def handlers(self) -> Sequence[Union[Handler, AsyncHandler]]:
         # Return handlers
         return self._handlers
 
     @handlers.setter
-    def handlers(self, value: Sequence[Handler]):
+    def handlers(self, value: Sequence[Union[Handler, AsyncHandler]]):
         # Update handlers
         self._handlers = value
 
