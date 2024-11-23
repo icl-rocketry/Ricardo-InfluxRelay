@@ -1,2 +1,2 @@
 # Internal imports
-from .process import Process
+from .process import Process, AsyncProcess
