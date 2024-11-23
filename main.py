@@ -7,7 +7,10 @@ import signal
 from ricardoinfluxrelay.relay import Relay
 
 # Set logging configuration
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - PID%(process)d - %(levelname)s - %(message)s",
+)
 
 
 def main(args) -> None:
