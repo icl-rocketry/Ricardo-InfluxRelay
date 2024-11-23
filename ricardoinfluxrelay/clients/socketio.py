@@ -7,9 +7,11 @@ import socketio
 
 # Internal imports
 from .client import AsyncClient
+from .factory import ClientFactory
 from ricardoinfluxrelay.event import Event
 
 
+@ClientFactory.register("socketio")
 class SocketIOClient(AsyncClient):
 
     def __init__(

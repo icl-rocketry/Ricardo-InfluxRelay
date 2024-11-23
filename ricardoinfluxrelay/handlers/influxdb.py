@@ -6,12 +6,14 @@ from typing import Dict, List
 from influxdb_client import InfluxDBClient, WritePrecision
 
 # Internal imports
+from .factory import HandlerFactory
 from .handler import Handler
 from ricardoinfluxrelay.event import Event
 
 # TODO: implement QuestDB specific library?
 
 
+@HandlerFactory.register("influxdb")
 class InfluxDBHandler(Handler):
     def __init__(
         self,

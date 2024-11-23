@@ -5,23 +5,18 @@ from __future__ import annotations
 from copy import deepcopy
 import multiprocessing as mp
 from time import sleep
-from typing import Union
+from typing import Dict, Union
 
 # Third-party imports
 import yaml
 
 # Internal imports
-from ricardoinfluxrelay.clients import (
-    ClientManager,
-    Client,
-    AsyncClient,
-    get_client_type,
-)
+from ricardoinfluxrelay.clients import ClientManager, Client, AsyncClient, ClientFactory
 from ricardoinfluxrelay.handlers import (
     HandlerManager,
     Handler,
     AsyncHandler,
-    get_handler_type,
+    HandlerFactory,
 )
 
 
@@ -110,39 +105,41 @@ class Relay:
 
     # TODO: move elsewhere?
     @staticmethod
-    def generate_handler(configuration, *args, **kwargs) -> Union[Handler, AsyncHandler]:
+    def generate_handler(
+        configuration: Dict[str, str],
+        *args,
+        **kwargs,
+    ) -> Union[Handler, AsyncHandler]:
         # Make a copy of the configuration
         configurationCopy = deepcopy(configuration)
 
         # Extract handler type
         handlerType = configurationCopy["type"]
 
-        # Extract handler class
-        handlerClass = get_handler_type(handlerType)
-
         # Drop type
         del configurationCopy["type"]
 
         # Return handler
-        return handlerClass(*args, **configurationCopy, **kwargs)
+        return HandlerFactory.create(handlerType, *args, **configurationCopy, **kwargs)
 
     # TODO: move elsewhere?
     @staticmethod
-    def generate_client(configuration, *args, **kwargs) -> Union[Client, AsyncClient]:
+    def generate_client(
+        configuration: Dict[str, str],
+        *args,
+        **kwargs,
+    ) -> Union[Client, AsyncClient]:
         # Make a copy of the configuration
         configurationCopy = deepcopy(configuration)
 
         # Extract client type
         clientType = configurationCopy["type"]
 
-        # Extract client class
-        clientClass = get_client_type(clientType)
-
         # Drop type
         del configurationCopy["type"]
 
         # Return client
-        return clientClass(*args, **configurationCopy, **kwargs)
+        return ClientFactory.create(clientType, *args, **configurationCopy, **kwargs)
 
     # Empty queue sleep [s]
     EMPTY_SLEEP = 10e-3

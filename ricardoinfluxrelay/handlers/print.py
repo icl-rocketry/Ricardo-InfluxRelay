@@ -2,10 +2,12 @@
 import logging
 
 # Internal imports
+from .factory import HandlerFactory
 from .handler import Handler
 from ricardoinfluxrelay.event import Event
 
 
+@HandlerFactory.register("print")
 class PrintHandler(Handler):
 
     def _initialise(self) -> bool:

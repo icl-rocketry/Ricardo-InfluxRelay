@@ -4,10 +4,12 @@ import os
 from typing import Dict, List
 
 # Internal imports
+from .factory import HandlerFactory
 from .handler import Handler
 from ricardoinfluxrelay.event import Event
 
 
+@HandlerFactory.register("file")
 class FileHandler(Handler):
 
     def __init__(

@@ -8,10 +8,12 @@ from typing import Dict, List
 import websockets
 
 # Internal imports
+from .factory import HandlerFactory
 from .handler import AsyncHandler
 from ricardoinfluxrelay.event import Event
 
 
+@HandlerFactory.register("websocket")
 class WebSocketHandler(AsyncHandler):
 
     def __init__(
