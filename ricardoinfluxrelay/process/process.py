@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 import asyncio
 import multiprocessing as mp
 import queue
+from time import sleep
 from typing import Any, Union
 
 
@@ -78,7 +79,7 @@ class Process(ABC, mp.Process):
 
         try:
             # Get object from input queue
-            obj = self.inputQueue.get(timeout=self.QUEUE_TIMEOUT)
+            obj = self.inputQueue.get_nowait()
 
             # Return if not initialised
             # TODO: move to input method?
@@ -89,8 +90,10 @@ class Process(ABC, mp.Process):
             self.input(obj)
 
         except queue.Empty:
+            # Reduce loop rate
+            sleep(self.QUEUE_TIMEOUT)
+
             # TODO: log empty queue?
-            pass
 
         except:
             # TODO: handle other exceptions?
@@ -211,7 +214,7 @@ class AsyncProcess(ABC, mp.Process):
 
         try:
             # Get object from input queue
-            obj = self.inputQueue.get(timeout=self.QUEUE_TIMEOUT)
+            obj = self.inputQueue.get_nowait()
 
             # Return if not initialised
             # TODO: move to input method?
@@ -223,8 +226,10 @@ class AsyncProcess(ABC, mp.Process):
             self.loop.create_task(self.input(obj))
 
         except queue.Empty:
+            # Sleep to yield to other tasks
+            await asyncio.sleep(self.QUEUE_TIMEOUT)
+
             # TODO: log empty queue?
-            pass
 
         except:
             # TODO: handle other exceptions?
@@ -246,9 +251,6 @@ class AsyncProcess(ABC, mp.Process):
             # Update process
             # NOTE: only called when initialised
             await self.update()
-
-            # Sleep to yield to other tasks
-            await asyncio.sleep(10e-3)
 
         # Deinitialise process
         await self.deinitialise()
