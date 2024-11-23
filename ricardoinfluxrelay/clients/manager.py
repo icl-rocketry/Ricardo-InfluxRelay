@@ -1,16 +1,14 @@
 # Standard imports
-from typing import List
+from typing import List, Sequence, Union
 
 # Internal imports
-from .socketio import SocketIOClient
+from .client import Client, AsyncClient
 from ricardoinfluxrelay.event import Event
-
-# TODO: make generic client class
 
 
 class ClientManager:
 
-    def __init__(self, clients: List[SocketIOClient]) -> None:
+    def __init__(self, clients: Sequence[Union[Client, AsyncClient]]) -> None:
         # Store clients
         self.clients = clients
 
@@ -29,6 +27,8 @@ class ClientManager:
         for clients in self.clients:
             # Stop process
             clients.shutdown()
+
+        # TODO: wait/check for processes to shutdown?
 
     def get(self) -> List[Event]:
         # Declare events list

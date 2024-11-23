@@ -3,14 +3,14 @@ import logging
 from typing import Any, Dict, List, Set, Union
 
 # Third-party imports
-from socketio import AsyncClient
+import socketio
 
 # Internal imports
+from .client import AsyncClient
 from ricardoinfluxrelay.event import Event
-from ricardoinfluxrelay.process import AsyncProcess
 
 
-class SocketIOClient(AsyncProcess):
+class SocketIOClient(AsyncClient):
 
     def __init__(
         self,
@@ -35,10 +35,12 @@ class SocketIOClient(AsyncProcess):
 
     async def _initialise(self) -> bool:
         # Declare SocketIO client
-        # TODO: try to revert to async-based client?
-        self.client = AsyncClient(handle_sigint=False, ssl_verify=self.ssl_verify)
+        self.client = socketio.AsyncClient(
+            handle_sigint=False,
+            ssl_verify=self.ssl_verify,
+        )
 
-        # Register (disconnection messages)
+        # Register (dis)connection messages
         self.client.on(event="connect", namespace="*", handler=self._connected)
         self.client.on(event="disconnect", namespace="*", handler=self._disconnected)
 
@@ -46,7 +48,7 @@ class SocketIOClient(AsyncProcess):
         self.client.on(
             event="*",
             namespace="*",
-            handler=self.handler,
+            handler=self._handler,
         )
 
         # Connect client
@@ -68,11 +70,7 @@ class SocketIOClient(AsyncProcess):
         logging.info(f"Attempting connection to {self.url}")
 
         # Connect client
-        try:
-            await self.client.connect(self.url, namespaces=self.namespaces, retry=True)
-        except:
-            # TODO: log failure to connect
-            pass
+        await self.client.connect(self.url, namespaces=self.namespaces, retry=True)
 
     async def disconnect(self) -> None:
         # Log disconnection attempt
@@ -92,7 +90,7 @@ class SocketIOClient(AsyncProcess):
         # Log disconnection
         logging.info(f"Disconnected from {namespace} at {self.url}")
 
-    def handler(self, event: str, namespace: str, data: str) -> None:
+    def _handler(self, event: str, namespace: str, data: str) -> None:
         # Create event object
         eventObj = Event(namespace, event, data, self.tags)
 

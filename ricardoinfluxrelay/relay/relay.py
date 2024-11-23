@@ -11,7 +11,12 @@ from typing import Union
 import yaml
 
 # Internal imports
-from ricardoinfluxrelay.clients import ClientManager, SocketIOClient
+from ricardoinfluxrelay.clients import (
+    ClientManager,
+    Client,
+    AsyncClient,
+    get_client_type,
+)
 from ricardoinfluxrelay.handlers import (
     HandlerManager,
     Handler,
@@ -82,19 +87,19 @@ class Relay:
             configuration = yaml.load(fid, Loader=yaml.CSafeLoader)
 
         # Split configuration
-        handlersConfiguration = configuration["handlers"]
-        socketsConfiguration = configuration["sockets"]
+        handlerConfigurations = configuration["handlers"]
+        clientConfigurations = configuration["clients"]
 
         # Create handlers
-        handlers = [Relay.generate_handler(config) for config in handlersConfiguration]
+        handlers = [Relay.generate_handler(config) for config in handlerConfigurations]
 
         # Create handler manager
         handlerManager = HandlerManager(handlers)
 
         # Create clients
         sockets = [
-            SocketIOClient(**config, namespaces=handlerManager.namespaces)
-            for config in socketsConfiguration
+            Relay.generate_client(config, namespaces=handlerManager.namespaces)
+            for config in clientConfigurations
         ]
 
         # Create client manager
@@ -105,7 +110,7 @@ class Relay:
 
     # TODO: move elsewhere?
     @staticmethod
-    def generate_handler(configuration) -> Union[Handler, AsyncHandler]:
+    def generate_handler(configuration, *args, **kwargs) -> Union[Handler, AsyncHandler]:
         # Make a copy of the configuration
         configurationCopy = deepcopy(configuration)
 
@@ -119,7 +124,25 @@ class Relay:
         del configurationCopy["type"]
 
         # Return handler
-        return handlerClass(**configurationCopy)
+        return handlerClass(*args, **configurationCopy, **kwargs)
+
+    # TODO: move elsewhere?
+    @staticmethod
+    def generate_client(configuration, *args, **kwargs) -> Union[Client, AsyncClient]:
+        # Make a copy of the configuration
+        configurationCopy = deepcopy(configuration)
+
+        # Extract client type
+        clientType = configurationCopy["type"]
+
+        # Extract client class
+        clientClass = get_client_type(clientType)
+
+        # Drop type
+        del configurationCopy["type"]
+
+        # Return client
+        return clientClass(*args, **configurationCopy, **kwargs)
 
     # Empty queue sleep [s]
     EMPTY_SLEEP = 10e-3
