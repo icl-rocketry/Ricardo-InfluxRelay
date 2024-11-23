@@ -58,31 +58,55 @@ class Process(ABC, mp.Process):
         # Stop process
         self.stopProcess.set()
 
+    def process_queues(self, drop: bool = True) -> None:
+        # To prevent the input queue from filling up, objects can be optionally "dropped" without the input method being called
+        #
+        #  ============= ======= ============================================
+        #   Initialised   Drop    Result
+        #  ============= ======= ============================================
+        #   False         False   No action
+        #   False         True    Object taken from queue, no further action
+        #   True          False   Input method called
+        #   True          True    "
+        #  ============= ======= ============================================
+        #
+
+        # Return if process is deinitialised and dropping is disabled
+        if (not self.initialised) and (not drop):
+            return
+
+        try:
+            # Get object from input queue
+            obj = self.inputQueue.get(timeout=self.QUEUE_TIMEOUT)
+
+            # Return if not initialised
+            # TODO: move to input method?
+            if not self.initialised:
+                return
+
+            # Call input handler
+            self.input(obj)
+
+        except queue.Empty:
+            # TODO: log empty queue?
+            pass
+
+        except:
+            # TODO: handle other exceptions?
+            pass
+
     def run(self) -> None:
         # Initialise process
         self.initialise()
 
         # Run loop
         while not self.stopProcess.is_set():
-            try:
-                # Get object from input queue
-                obj = self.inputQueue.get(timeout=self.QUEUE_TIMEOUT)
+            # Process input queue
+            self.process_queues()
 
-                # Abort loop iteration if not initialised
-                # NOTE: this ensures that the queue does not fill up
-                if not self.initialised:
-                    continue
-
-                # Call input handler
-                self.input(obj)
-
-            except queue.Empty:
-                # TODO: log empty queue?
-                pass
-
-            except:
-                # TODO: handle other exceptions?
-                pass
+            # Continue run loop if not initialised
+            if not self.initialised:
+                continue
 
             # Update process
             # NOTE: only called when initialised
@@ -91,11 +115,20 @@ class Process(ABC, mp.Process):
         # Deinitialise process
         self.deinitialise()
 
-    def put(self, obj: Any, block: bool = True, timeout: Union[float, None] = None) -> None:
+    def put(
+        self,
+        obj: Any,
+        block: bool = True,
+        timeout: Union[float, None] = None,
+    ) -> None:
         # Put object on receive queue
         self.inputQueue.put(obj, block, timeout)
 
-    def get(self, block: bool = True, timeout: Union[float, None] = None) -> Any:
+    def get(
+        self,
+        block: bool = True,
+        timeout: Union[float, None] = None,
+    ) -> Any:
         # Return object on send queue
         return self.outputQueue.get(block, timeout)
 
