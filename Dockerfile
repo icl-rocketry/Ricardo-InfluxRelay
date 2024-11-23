@@ -1,5 +1,5 @@
 # Base image
-FROM python:3.10-slim
+FROM python:3.8-slim
 
 # Update/upgrade packages
 RUN apt-get update -y && apt-get upgrade -y

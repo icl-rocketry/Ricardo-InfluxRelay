@@ -1,7 +1,7 @@
 # Standard imports
 import logging
 from time import time
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, List, Set, Union
 
 # Third-party imports
 from socketio import Client
@@ -16,7 +16,7 @@ class SocketIOClient(Process):
     def __init__(
         self,
         url: str,
-        namespaces: Set[str] | List[str],
+        namespaces: Union[Set[str], List[str]],
         tags: Dict[str, str] = {},
         ssl_verify: bool = True,
         *args,

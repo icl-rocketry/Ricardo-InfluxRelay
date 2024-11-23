@@ -2,7 +2,7 @@
 from abc import ABC, abstractmethod
 import multiprocessing as mp
 import queue
-from typing import Any
+from typing import Any, Union
 
 
 class Process(ABC, mp.Process):
@@ -91,11 +91,11 @@ class Process(ABC, mp.Process):
         # Deinitialise process
         self.deinitialise()
 
-    def put(self, obj: Any, block: bool = True, timeout: float | None = None) -> None:
+    def put(self, obj: Any, block: bool = True, timeout: Union[float, None] = None) -> None:
         # Put object on receive queue
         self.inputQueue.put(obj, block, timeout)
 
-    def get(self, block: bool = True, timeout: float | None = None) -> Any:
+    def get(self, block: bool = True, timeout: Union[float, None] = None) -> Any:
         # Return object on send queue
         return self.outputQueue.get(block, timeout)
 

@@ -1,7 +1,7 @@
 # Standard imports
 from dataclasses import dataclass
 import json
-from typing import Any, Dict
+from typing import Any, Dict, Union
 
 # Third-party imports
 import flatten_json
@@ -19,7 +19,7 @@ class Event:
         self,
         namespace: str,
         event: str,
-        data: str | Dict[str, Any],
+        data: Union[str, Dict[str, Any]],
         tags: Dict[str, str],
     ) -> None:
         # TODO: type checks?
